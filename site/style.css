@@ -79,6 +79,27 @@ a:hover { text-decoration-color: var(--spot); text-decoration-thickness: 2px; }
 .hero-copy { grid-column: 1 / span 7; align-self: center; }
 .demo { grid-column: 8 / span 5; margin: 0; align-self: center; }
 
+.brand {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--s) * 2);
+  margin: 0 0 calc(var(--s) * 5);
+}
+.brand img {
+  width: 136px;
+  height: 136px;
+  margin: -14px -10px -14px -14px; /* o PNG tem margem transparente do squircle */
+  filter: drop-shadow(0 1px 0 oklch(0.2 0.012 60 / 0.25));
+}
+.brand > div { display: flex; flex-direction: column; gap: 4px; }
+.brand-name { font: 600 2.4rem / 1 var(--f-display); letter-spacing: -0.01em; }
+.brand-tag {
+  font: 500 var(--t-xs) / 1.2 var(--f-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 h1 {
   font: 500 var(--t-xl) / 0.98 var(--f-display);
   letter-spacing: -0.02em;

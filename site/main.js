@@ -1,11 +1,11 @@
 // Demo: repete a mecânica do overlay — a linha atual centralizada e destacada.
 // Letra de exemplo inventada.
 const LINES = [
-  "Acendo a luz da cozinha às três",
+  "Acendo a luz da cozinha",
   "o rádio ainda sabe o teu nome",
   "a cidade inteira fica quieta",
   "só pra ouvir o refrão passar",
-  "e eu canto baixo, sem saber a letra",
+  "e eu canto baixo, sem saber",
   "até a letra aparecer pra mim",
 ];
 
