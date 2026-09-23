@@ -19,7 +19,7 @@ App desktop pessoal (macOS e Windows) que mostra, num overlay flutuante, **somen
 
 - Letras não sincronizadas (texto puro), tradução, karaokê palavra por palavra.
 - Outros players além do Spotify.
-- Tela de configurações. Os únicos ajustes são posição e offset, feitos via atalho.
+- Tela de configurações. Os únicos ajustes são posição e offset, feitos via atalho ou pelo menu do ícone.
 - Instalador, auto-update, assinatura de código.
 
 ## Stack
