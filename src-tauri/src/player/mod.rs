@@ -1,5 +1,10 @@
 use std::fmt;
 
+pub mod macos;
+
+#[cfg(windows)]
+pub mod windows;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NowPlaying {
     pub title: String,
@@ -49,3 +54,16 @@ impl fmt::Display for PlayerError {
 pub trait Player: Send + Sync {
     fn now_playing(&self) -> Result<Option<NowPlaying>, PlayerError>;
 }
+
+#[cfg(target_os = "macos")]
+pub fn system_player() -> std::sync::Arc<dyn Player> {
+    std::sync::Arc::new(macos::MacSpotifyPlayer)
+}
+
+#[cfg(windows)]
+pub fn system_player() -> std::sync::Arc<dyn Player> {
+    std::sync::Arc::new(windows::WinSmtcPlayer)
+}
+
+#[cfg(not(any(target_os = "macos", windows)))]
+compile_error!("plataforma não suportada");
