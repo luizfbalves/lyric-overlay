@@ -149,7 +149,7 @@ pub trait Translator: Send + Sync {
 ### Buy Me a Coffee
 
 - Assets oficiais do brand kit em `src/assets/bmc/`: `bmc-button.svg` (botão), `bmc-logo.svg` (logo) e `bmc-logo.png` (ícone do item de menu nativo).
-- URL em uma constante única `SUPPORT_URL` (`https://buymeacoffee.com/<usuario>`), usada pelo item do menu do ícone e pelo botão da janela de Preferências. Abre no navegador padrão via `tauri-plugin-opener`.
+- URL em uma constante única `SUPPORT_URL` (`https://buymeacoffee.com/luizfbalves`), usada pelo item do menu do ícone e pelo botão da janela de Preferências. Abre no navegador padrão via `tauri-plugin-opener`.
 - Cada mudança é aplicada na hora: a janela de Aparência chama o comando `set_appearance`, o backend salva na config e emite `appearance-changed` para o overlay, que atualiza variáveis CSS (`--ov-font`, `--ov-color`, `--ov-bg`) e recentraliza a linha atual.
 
 ### Config
