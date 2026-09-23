@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Verso — Spotify lyrics on top of everything</title>
+    <meta name="description" content="Free app for macOS and Windows that shows synced lyrics for whatever is playing on Spotify, floating over any window." />
+    <link rel="icon" href="../icon.png" />
+    <link rel="alternate" hreflang="pt-BR" href="https://luizfbalves.github.io/verso/" />
+    <link rel="alternate" hreflang="en" href="https://luizfbalves.github.io/verso/en/" />
+    <link rel="alternate" hreflang="x-default" href="https://luizfbalves.github.io/verso/en/" />
+    <link rel="preconnect" href="https://api.fontshare.com" />
+    <link href="https://api.fontshare.com/v2/css?f[]=gambetta@400,500,600,400i&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../style.css" />
+  </head>
+  <body>
+    <div class="sleeve">
+      <header class="catalog">
+        <span>VRS–001</span>
+        <span class="catalog-title">Verso</span>
+        <span class="catalog-end">
+          <span class="catalog-meta">v<span data-version>0.1</span> · macOS / Windows</span>
+          <nav class="lang" aria-label="Language"><a href="../" hreflang="pt-BR" lang="pt-BR" data-lang="pt">PT</a><span aria-current="page">EN</span></nav>
+        </span>
+      </header>
+
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="brand">
+            <img src="../icon-256.png" alt="" width="136" height="136" />
+            <div>
+              <span class="brand-name">Verso</span>
+              <span class="brand-tag">synced lyrics · for Spotify</span>
+            </div>
+          </div>
+          <h1>The lyrics, <em>in time</em> with the music.</h1>
+          <p class="lede">
+            A small, free app that shows synced lyrics for whatever is playing on Spotify,
+            floating on top of any window — from your code editor to your browser.
+          </p>
+          <div class="cta" id="downloads">
+            <a class="btn btn-primary" data-dl="mac-arm" href="https://github.com/luizfbalves/verso/releases/latest">Download for macOS</a>
+            <a class="btn" data-dl="win" href="https://github.com/luizfbalves/verso/releases/latest">Download for Windows</a>
+          </div>
+          <p class="fine">
+            Intel Mac? <a data-dl="mac-intel" href="https://github.com/luizfbalves/verso/releases/latest">Get this version</a>.
+            All versions on <a href="https://github.com/luizfbalves/verso/releases">Releases</a>.
+          </p>
+        </div>
+
+        <figure class="demo" aria-label="Demo: the current lyric line is highlighted as the song plays">
+          <div class="demo-screen">
+            <div class="demo-fade"><div class="demo-track" id="demo-track"></div></div>
+          </div>
+          <figcaption>
+            <span>Fig. 1</span> The current line stands out; the others fade. Sample lyrics, made up.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section class="side" aria-labelledby="side-a">
+        <h2 id="side-a"><span class="side-mark">Side A</span> What it does</h2>
+        <ol class="tracklist">
+          <li><span class="no">01</span><span class="name">Syncs with Spotify</span><span class="lead"></span><span class="meta">automatic</span></li>
+          <li><span class="no">02</span><span class="name">Stays on top of every window</span><span class="lead"></span><span class="meta">without stealing clicks</span></li>
+          <li><span class="no">03</span><span class="name">Five fonts, handwriting included</span><span class="lead"></span><span class="meta">Preferences</span></li>
+          <li><span class="no">04</span><span class="name">Size, text color and current-line background</span><span class="lead"></span><span class="meta">Preferences</span></li>
+          <li><span class="no">05</span><span class="name">Drag it anywhere on screen</span><span class="lead"></span><span class="meta"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>L</kbd></span></li>
+          <li><span class="no">06</span><span class="name">Lyrics early or late? Adjust per track</span><span class="lead"></span><span class="meta"><kbd>⌘</kbd><kbd>⌥</kbd><kbd>⇧</kbd><kbd>←</kbd><kbd>→</kbd></span></li>
+          <li><span class="no">07</span><span class="name">Lives in the menu bar, no Dock window</span><span class="lead"></span><span class="meta">tray on Windows</span></li>
+        </ol>
+        <p class="note">On Windows, use <kbd>Ctrl</kbd> instead of <kbd>⌘</kbd> and <kbd>Alt</kbd> instead of <kbd>⌥</kbd>.</p>
+      </section>
+
+      <section class="side" aria-labelledby="side-b">
+        <h2 id="side-b"><span class="side-mark">Side B</span> Install</h2>
+        <div class="install">
+          <div>
+            <h3>macOS</h3>
+            <ol class="steps">
+              <li><span>Open the <code>.dmg</code> and drag the app to Applications.</span></li>
+              <li><span>The first time, right-click the app and choose <strong>Open</strong>. The app isn't signed by Apple, so double-clicking is blocked on that first launch only.</span></li>
+              <li><span>When macOS asks, allow Verso to control <strong>Spotify</strong>. That's how it knows what's playing.</span></li>
+            </ol>
+          </div>
+          <div>
+            <h3>Windows</h3>
+            <ol class="steps">
+              <li><span>Run the <code>.exe</code> installer.</span></li>
+              <li><span>If SmartScreen warns you, click <strong>More info</strong> and then <strong>Run anyway</strong>.</span></li>
+              <li><span>Play something in the Spotify app for Windows. The lyrics show up on their own.</span></li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <footer class="colophon">
+        <div>
+          <h4>Credits</h4>
+          <p>Made by <a href="https://github.com/luizfbalves">@luizfbalves</a>. Synced lyrics from <a href="https://lrclib.net">LRCLIB</a>, an open, community-maintained database.</p>
+          <p>Open source under the <a href="https://github.com/luizfbalves/verso/blob/main/LICENSE">MIT</a> license. Free code signing provided by <a href="https://about.signpath.io">SignPath.io</a>, certificate by <a href="https://signpath.org">SignPath Foundation</a> (<a href="https://github.com/luizfbalves/verso#code-signing-policy">policy</a>).</p>
+        </div>
+        <div>
+          <h4>Not affiliated</h4>
+          <p>Spotify is a trademark of Spotify AB. This is an independent project.</p>
+          <p><a href="privacy.html">Privacy</a></p>
+        </div>
+        <div>
+          <h4>Like it?</h4>
+          <a class="bmc" href="https://buymeacoffee.com/luizfbalves"><img src="../bmc-button.svg" alt="Buy me a coffee" width="180" height="51" /></a>
+        </div>
+      </footer>
+    </div>
+    <script src="../main.js" type="module"></script>
+    <script src="../lang.js"></script>
+  </body>
+</html>

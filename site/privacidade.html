@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacidade — Verso</title>
+    <meta name="description" content="O que o Verso envia pela internet, o que guarda no seu computador e o que nunca coleta." />
+    <link rel="icon" href="icon.png" />
+    <link rel="alternate" hreflang="pt-BR" href="https://luizfbalves.github.io/verso/privacidade.html" />
+    <link rel="alternate" hreflang="en" href="https://luizfbalves.github.io/verso/en/privacy.html" />
+    <link rel="preconnect" href="https://api.fontshare.com" />
+    <link href="https://api.fontshare.com/v2/css?f[]=gambetta@400,500,600,400i&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="sleeve">
+      <header class="catalog">
+        <a href="./">VRS–001</a>
+        <span class="catalog-title">Verso</span>
+        <span class="catalog-end">
+          <span class="catalog-meta">Privacidade</span>
+          <nav class="lang" aria-label="Idioma"><span aria-current="page">PT</span><a href="en/privacy.html" hreflang="en" lang="en" data-lang="en">EN</a></nav>
+        </span>
+      </header>
+
+      <main class="side prose">
+        <h2><span class="side-mark">Nota</span> Privacidade</h2>
+        <p class="fine">Atualizada em 23 de setembro de 2026.</p>
+
+        <p>
+          O Verso não tem conta, não tem servidor próprio e não coleta estatísticas de uso.
+          Ele só se conecta à internet para buscar a letra da música que está tocando e, se você pedir, para traduzi-la.
+        </p>
+
+        <h3>O que sai do seu computador</h3>
+        <ul>
+          <li>
+            <strong><a href="https://lrclib.net">LRCLIB</a></strong>: título, artista, álbum e duração da faixa que toca no Spotify,
+            para buscar a letra sincronizada. É um banco aberto mantido pela comunidade.
+          </li>
+          <li>
+            <strong><a href="https://www.deepl.com/privacy">DeepL</a></strong>: só se você ativar a tradução e informar a sua própria chave de API.
+            Nesse caso, as linhas da letra são enviadas para tradução, sob a política de privacidade do DeepL.
+          </li>
+        </ul>
+        <p>Nenhuma outra informação é enviada: nem identificadores do seu computador, nem dados da sua conta do Spotify.</p>
+
+        <h3>O que fica no seu computador</h3>
+        <ul>
+          <li>As preferências do app (posição, aparência, atalhos), num arquivo de configuração local.</li>
+          <li>As traduções já feitas, em cache, para não repetir chamadas ao DeepL.</li>
+          <li>A chave do DeepL, guardada no cofre de senhas do sistema (Chaves no macOS, Gerenciador de Credenciais no Windows).</li>
+        </ul>
+        <p>Desinstalar o app e apagar essas pastas remove tudo.</p>
+
+        <h3>Este site</h3>
+        <p>
+          O site é hospedado pelo GitHub Pages e carrega fontes do Fontshare e do Google Fonts.
+          Para mostrar os links da versão mais recente, ele consulta a API pública do GitHub.
+          Não usamos cookies nem analytics.
+        </p>
+
+        <h3>Código aberto</h3>
+        <p>
+          O código do Verso é aberto sob licença MIT e pode ser conferido em
+          <a href="https://github.com/luizfbalves/verso">github.com/luizfbalves/verso</a>.
+          Os instaladores para Windows são assinados gratuitamente pelo <a href="https://about.signpath.io">SignPath.io</a>, com certificado da
+          <a href="https://signpath.org">SignPath Foundation</a>
+          (<a href="https://github.com/luizfbalves/verso#code-signing-policy">política de assinatura</a>).
+        </p>
+
+        <h3>Contato</h3>
+        <p>Dúvidas? Abra uma <a href="https://github.com/luizfbalves/verso/issues">issue no GitHub</a>.</p>
+      </main>
+    </div>
+    <script src="lang.js"></script>
+  </body>
+</html>

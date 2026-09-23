@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy — Verso</title>
+    <meta name="description" content="What Verso sends over the internet, what it keeps on your computer and what it never collects." />
+    <link rel="icon" href="../icon.png" />
+    <link rel="alternate" hreflang="pt-BR" href="https://luizfbalves.github.io/verso/privacidade.html" />
+    <link rel="alternate" hreflang="en" href="https://luizfbalves.github.io/verso/en/privacy.html" />
+    <link rel="preconnect" href="https://api.fontshare.com" />
+    <link href="https://api.fontshare.com/v2/css?f[]=gambetta@400,500,600,400i&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../style.css" />
+  </head>
+  <body>
+    <div class="sleeve">
+      <header class="catalog">
+        <a href="./">VRS–001</a>
+        <span class="catalog-title">Verso</span>
+        <span class="catalog-end">
+          <span class="catalog-meta">Privacy</span>
+          <nav class="lang" aria-label="Language"><a href="../privacidade.html" hreflang="pt-BR" lang="pt-BR" data-lang="pt">PT</a><span aria-current="page">EN</span></nav>
+        </span>
+      </header>
+
+      <main class="side prose">
+        <h2><span class="side-mark">Note</span> Privacy</h2>
+        <p class="fine">Last updated September 23, 2026.</p>
+
+        <p>
+          Verso has no accounts, no server of its own and collects no usage statistics.
+          It only goes online to fetch the lyrics of the song that's playing and, if you ask it to, to translate them.
+        </p>
+
+        <h3>What leaves your computer</h3>
+        <ul>
+          <li>
+            <strong><a href="https://lrclib.net">LRCLIB</a></strong>: title, artist, album and duration of the track playing on Spotify,
+            to fetch synced lyrics. It's an open, community-maintained database.
+          </li>
+          <li>
+            <strong><a href="https://www.deepl.com/privacy">DeepL</a></strong>: only if you turn on translation and enter your own API key.
+            In that case the lyric lines are sent for translation, under DeepL's privacy policy.
+          </li>
+        </ul>
+        <p>Nothing else is sent: no identifiers for your computer and no data from your Spotify account.</p>
+
+        <h3>What stays on your computer</h3>
+        <ul>
+          <li>The app's preferences (position, appearance, shortcuts), in a local config file.</li>
+          <li>Translations already made, cached so DeepL isn't called twice for the same lyrics.</li>
+          <li>Your DeepL key, stored in the system's password vault (Keychain on macOS, Credential Manager on Windows).</li>
+        </ul>
+        <p>Uninstalling the app and deleting those folders removes everything.</p>
+
+        <h3>This website</h3>
+        <p>
+          This site is hosted on GitHub Pages and loads fonts from Fontshare and Google Fonts.
+          To link to the latest version, it queries the public GitHub API.
+          We use no cookies and no analytics.
+        </p>
+
+        <h3>Open source</h3>
+        <p>
+          Verso's source code is open under the MIT license and can be reviewed at
+          <a href="https://github.com/luizfbalves/verso">github.com/luizfbalves/verso</a>.
+          Free code signing for the Windows installers is provided by <a href="https://about.signpath.io">SignPath.io</a>, certificate by
+          <a href="https://signpath.org">SignPath Foundation</a>
+          (<a href="https://github.com/luizfbalves/verso#code-signing-policy">code signing policy</a>).
+        </p>
+
+        <h3>Contact</h3>
+        <p>Questions? Open an <a href="https://github.com/luizfbalves/verso/issues">issue on GitHub</a>.</p>
+      </main>
+    </div>
+    <script src="../lang.js"></script>
+  </body>
+</html>

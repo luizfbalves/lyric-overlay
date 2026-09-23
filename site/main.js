@@ -1,13 +1,24 @@
 // Demo: repete a mecânica do overlay — a linha atual centralizada e destacada.
-// Letra de exemplo inventada.
-const LINES = [
-  "Acendo a luz da cozinha",
-  "o rádio ainda sabe o teu nome",
-  "a cidade inteira fica quieta",
-  "só pra ouvir o refrão passar",
-  "e eu canto baixo, sem saber",
-  "até a letra aparecer pra mim",
-];
+// Letras de exemplo inventadas, uma por idioma do site.
+const DEMO = {
+  pt: [
+    "Acendo a luz da cozinha",
+    "o rádio ainda sabe o teu nome",
+    "a cidade inteira fica quieta",
+    "só pra ouvir o refrão passar",
+    "e eu canto baixo, sem saber",
+    "até a letra aparecer pra mim",
+  ],
+  en: [
+    "I leave the kitchen light on",
+    "the radio still knows your name",
+    "the whole town goes quiet",
+    "just to hear the chorus pass",
+    "and I sing low, not knowing",
+    "until the words show up for me",
+  ],
+};
+const LINES = document.documentElement.lang.startsWith("pt") ? DEMO.pt : DEMO.en;
 
 const track = document.getElementById("demo-track");
 const screen = track.parentElement.parentElement;

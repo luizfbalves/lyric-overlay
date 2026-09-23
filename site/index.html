@@ -6,6 +6,18 @@
     <title>Verso — a letra do Spotify por cima de tudo</title>
     <meta name="description" content="App gratuito para macOS e Windows que mostra a letra sincronizada da música que toca no Spotify, flutuando sobre qualquer janela." />
     <link rel="icon" href="icon.png" />
+    <link rel="alternate" hreflang="pt-BR" href="https://luizfbalves.github.io/verso/" />
+    <link rel="alternate" hreflang="en" href="https://luizfbalves.github.io/verso/en/" />
+    <link rel="alternate" hreflang="x-default" href="https://luizfbalves.github.io/verso/en/" />
+    <script>
+      // Primeira visita sem português no navegador: manda para a versão em inglês.
+      // A escolha manual no seletor de idioma fica salva e vence a detecção.
+      try {
+        const pref = localStorage.getItem("verso-lang");
+        const pt = (navigator.languages || [navigator.language]).some((l) => /^pt/i.test(l));
+        if (pref === "en" || (!pref && !pt)) location.replace("en/");
+      } catch {}
+    </script>
     <link rel="preconnect" href="https://api.fontshare.com" />
     <link href="https://api.fontshare.com/v2/css?f[]=gambetta@400,500,600,400i&display=swap" rel="stylesheet" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -18,7 +30,10 @@
       <header class="catalog">
         <span>VRS–001</span>
         <span class="catalog-title">Verso</span>
-        <span>v<span data-version>0.1</span> · macOS / Windows</span>
+        <span class="catalog-end">
+          <span class="catalog-meta">v<span data-version>0.1</span> · macOS / Windows</span>
+          <nav class="lang" aria-label="Idioma"><span aria-current="page">PT</span><a href="en/" hreflang="en" lang="en" data-lang="en">EN</a></nav>
+        </span>
       </header>
 
       <section class="hero">
@@ -95,10 +110,12 @@
         <div>
           <h4>Créditos</h4>
           <p>Feito por <a href="https://github.com/luizfbalves">@luizfbalves</a>. Letras sincronizadas vindas do <a href="https://lrclib.net">LRCLIB</a>, um banco aberto e mantido pela comunidade.</p>
+          <p>Código aberto sob licença <a href="https://github.com/luizfbalves/verso/blob/main/LICENSE">MIT</a>. Assinatura de código gratuita por <a href="https://about.signpath.io">SignPath.io</a>, certificado da <a href="https://signpath.org">SignPath Foundation</a> (<a href="https://github.com/luizfbalves/verso#code-signing-policy">política</a>).</p>
         </div>
         <div>
           <h4>Não é afiliado</h4>
           <p>Spotify é marca da Spotify AB. Este é um projeto independente.</p>
+          <p><a href="privacidade.html">Privacidade</a></p>
         </div>
         <div>
           <h4>Gostou?</h4>
@@ -107,5 +124,6 @@
       </footer>
     </div>
     <script src="main.js" type="module"></script>
+    <script src="lang.js"></script>
   </body>
 </html>
