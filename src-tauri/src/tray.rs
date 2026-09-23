@@ -120,7 +120,10 @@ fn handle(app: &AppHandle, id: &str) {
                 eprintln!("abrir link: {e}");
             }
         }
-        "quit" => app.exit(0),
+        "quit" => {
+            overlay::save_position_if_editing(app);
+            app.exit(0);
+        }
         other => {
             if let Some(mode) = mode_from_id(other) {
                 let cur = app.state::<AppState>().config().translation;
@@ -132,18 +135,26 @@ fn handle(app: &AppHandle, id: &str) {
 
 pub fn set_track_title(app: &AppHandle, title: Option<String>) {
     let st = app.state::<AppState>();
-    let guard = st.tray.lock().unwrap();
-    if let Some(h) = guard.as_ref() {
-        let _ = h.title.set_text(title.as_deref().unwrap_or(NOTHING_PLAYING));
+    // Clona o handle e solta o lock antes de chamar `set_text`: no Tauri 2.11 essa chamada,
+    // fora da main thread, bloqueia esperando a main thread — que pode estar tentando este
+    // mesmo lock — causando deadlock se o guard ainda estiver seguro.
+    let title_item = st.tray.lock().unwrap().as_ref().map(|h| h.title.clone());
+    if let Some(item) = title_item {
+        if let Err(e) = item.set_text(title.as_deref().unwrap_or(NOTHING_PLAYING)) {
+            eprintln!("atualizar título da bandeja: {e}");
+        }
     }
 }
 
 pub fn set_mode_checks(app: &AppHandle, mode: Mode) {
     let st = app.state::<AppState>();
-    let guard = st.tray.lock().unwrap();
-    if let Some(h) = guard.as_ref() {
-        for (m, it) in &h.modes {
-            let _ = it.set_checked(*m == mode);
+    // Mesmo motivo de `set_track_title`: clona os handles e solta o lock antes de chamar
+    // `set_checked`, para não travar esperando a main thread que pode querer este lock.
+    let items: Vec<(Mode, CheckMenuItem<Wry>)> =
+        st.tray.lock().unwrap().as_ref().map(|h| h.modes.clone()).unwrap_or_default();
+    for (m, it) in items {
+        if let Err(e) = it.set_checked(m == mode) {
+            eprintln!("atualizar check de modo da bandeja: {e}");
         }
     }
 }
