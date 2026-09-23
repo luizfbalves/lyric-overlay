@@ -1,6 +1,7 @@
 pub mod config;
 pub mod lyrics;
 pub mod player;
+pub mod translate;
 
 pub fn run() {
     tauri::Builder::default()
