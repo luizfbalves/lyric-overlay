@@ -133,7 +133,7 @@ pub trait Translator: Send + Sync {
   - Serifada: Lora
   - Mono: JetBrains Mono
 - **Cor do texto:** 5 amostras (branco, amarelo, verde, azul, grafite) + seletor de cor livre. Padrão: branco.
-- **Fundo:** "sem fundo" (padrão) + 3 amostras (preto, azul-noite, branco) + seletor de cor livre + slider de opacidade (10–100%, padrão 60%, desabilitado quando sem fundo). O fundo é um retângulo arredondado atrás da área de 3 linhas. Com fundo, o `text-shadow` é removido; sem fundo, fica o `text-shadow` forte.
+- **Fundo:** "sem fundo" (padrão) + 3 amostras (preto, azul-noite, branco) + seletor de cor livre + slider de opacidade (10–100%, padrão 60%, desabilitado quando sem fundo). O fundo é uma pílula arredondada que envolve só a linha em destaque (largura ajustada ao texto; no modo "ambos", cobre tradução + original) e acompanha o foco com transição de ~400 ms. As linhas vizinhas nunca têm fundo e mantêm o `text-shadow` forte; a linha em destaque perde o `text-shadow` quando há fundo.
 - Botão "Restaurar padrão".
 
 **Tradução**
