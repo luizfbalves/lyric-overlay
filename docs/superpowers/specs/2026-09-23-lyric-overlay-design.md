@@ -1,11 +1,11 @@
 # Lyric Overlay — Design
 
 Data: 2026-09-23
-Status: aguardando revisão
+Status: aprovada (2026-09-23)
 
 ## Objetivo
 
-App desktop pessoal (macOS e Windows) que mostra, num overlay flutuante, **somente a linha atual** da letra da música tocando no Spotify, sincronizada com a reprodução. O usuário trabalha normalmente e lê a letra sem que ela ocupe espaço ou bloqueie cliques.
+App desktop pessoal (macOS e Windows) que mostra, num overlay flutuante, a letra da música rolando com **foco na linha atual** (3 linhas visíveis) da música tocando no Spotify, sincronizada com a reprodução. O usuário trabalha normalmente e lê a letra sem que ela ocupe espaço ou bloqueie cliques.
 
 **Critério de sucesso:** com o Spotify tocando uma faixa que tem letra sincronizada no LRCLIB, a linha exibida acompanha a música com atraso perceptível < ~300 ms, sem interferir no uso do resto da tela.
 
