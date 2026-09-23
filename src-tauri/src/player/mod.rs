@@ -55,6 +55,13 @@ pub trait Player: Send + Sync {
     fn now_playing(&self) -> Result<Option<NowPlaying>, PlayerError>;
 }
 
+/// Tempo decorrido desde um `DateTime.UniversalTime` do WinRT (ticks de 100 ns desde 1601-01-01 UTC).
+pub fn smtc_elapsed_ms(universal_time: i64, now_unix_ms: u64) -> u64 {
+    const EPOCH_DIFF_MS: i64 = 11_644_473_600_000;
+    let then_unix_ms = universal_time / 10_000 - EPOCH_DIFF_MS;
+    (now_unix_ms as i64 - then_unix_ms).max(0) as u64
+}
+
 #[cfg(target_os = "macos")]
 pub fn system_player() -> std::sync::Arc<dyn Player> {
     std::sync::Arc::new(macos::MacSpotifyPlayer)
@@ -67,3 +74,20 @@ pub fn system_player() -> std::sync::Arc<dyn Player> {
 
 #[cfg(not(any(target_os = "macos", windows)))]
 compile_error!("plataforma não suportada");
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // 2026-01-01T00:00:00Z em ms Unix e em ticks de 100 ns desde 1601.
+    const UNIX_MS: u64 = 1_767_225_600_000;
+    const WIN_TICKS: i64 = (1_767_225_600_000 + 11_644_473_600_000) * 10_000;
+
+    #[test]
+    fn smtc_elapsed() {
+        assert_eq!(smtc_elapsed_ms(WIN_TICKS, UNIX_MS), 0);
+        assert_eq!(smtc_elapsed_ms(WIN_TICKS, UNIX_MS + 2_500), 2_500);
+        // relógio "voltou": nunca negativo
+        assert_eq!(smtc_elapsed_ms(WIN_TICKS, UNIX_MS - 1_000), 0);
+    }
+}
