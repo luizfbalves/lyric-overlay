@@ -1,5 +1,6 @@
 pub mod cache;
 pub mod deepl;
+pub mod service;
 
 use async_trait::async_trait;
 
