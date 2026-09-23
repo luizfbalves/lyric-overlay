@@ -26,7 +26,7 @@ App desktop pessoal (macOS e Windows) que mostra, num overlay flutuante, **somen
 ## Stack
 
 - **Tauri 2** (backend em Rust, frontend em HTML/CSS/TS sem framework).
-- Crates: `tauri`, `tauri-plugin-global-shortcut`, `reqwest` (rustls), `serde`/`serde_json`, `tokio`, `keyring` (chave DeepL no Keychain/Credential Manager), `windows` (somente Windows, para SMTC).
+- Crates: `tauri`, `tauri-plugin-global-shortcut`, `reqwest` (rustls), `serde`/`serde_json`, `tokio`, `keyring` (chave DeepL no Keychain/Credential Manager), `tauri-plugin-opener` (abrir links no navegador), `windows` (somente Windows, para SMTC).
 
 ## Arquitetura
 
@@ -139,6 +139,9 @@ pub trait Translator: Send + Sync {
 **Tradução**
 
 - Campo da chave DeepL (tipo senha; salvo no `keyring` ao sair do campo) e seletor de idioma-alvo (Português (Brasil), Inglês (EUA), Espanhol; padrão PT-BR).
+- Atalhos para obter a chave, abertos no navegador padrão via `tauri-plugin-opener`:
+  - botão **"Criar chave grátis no DeepL"** → `https://www.deepl.com/pro-api` (cadastro no plano API Free);
+  - link **"Já tenho conta: ver minhas chaves"** → `https://www.deepl.com/your-account/keys`.
 - Mostra o uso do mês e avisos de chave inválida ou cota esgotada.
 - Cada mudança é aplicada na hora: a janela de Aparência chama o comando `set_appearance`, o backend salva na config e emite `appearance-changed` para o overlay, que atualiza variáveis CSS (`--ov-font`, `--ov-color`, `--ov-bg`) e recentraliza a linha atual.
 
