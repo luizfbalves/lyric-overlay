@@ -1,0 +1,87 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+#overlay {
+  --ov-scale: 1;
+  --ov-font: -apple-system, "Segoe UI", system-ui, sans-serif;
+  --ov-color: #fff;
+  --ov-bg: transparent;
+  position: fixed;
+  inset: 0;
+  box-sizing: border-box;
+  padding: 0 16px;
+  border: 2px dashed transparent;
+  border-radius: 12px;
+}
+#overlay.edit { border-color: rgba(255, 255, 255, 0.7); background: rgba(0, 0, 0, 0.25); cursor: grab; }
+
+.viewport {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  transition: opacity 0.3s ease;
+  -webkit-mask-image: linear-gradient(transparent 0%, #000 32%, #000 68%, transparent 100%);
+  mask-image: linear-gradient(transparent 0%, #000 32%, #000 68%, transparent 100%);
+}
+#overlay.hidden .viewport { opacity: 0; }
+
+.track { position: relative; will-change: transform; transition: transform 0.55s cubic-bezier(0.22, 0.8, 0.24, 1); }
+
+.ln {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 0.18em 0.7em;
+  border-radius: 10px;
+  font-family: var(--ov-font);
+  font-weight: 600;
+  font-size: calc(25px * var(--ov-scale));
+  line-height: 1.25;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--ov-color);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 0 12px rgba(0, 0, 0, 0.75);
+  opacity: 0.3;
+  transform: scale(0.85);
+  transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.22, 0.8, 0.24, 1), background-color 0.4s ease;
+}
+.ln.cur { opacity: 1; transform: scale(1); }
+#overlay.has-bg .ln.cur { background: var(--ov-bg); text-shadow: none; }
+.ln.gap { letter-spacing: 0.4em; font-size: calc(17px * var(--ov-scale)); }
+
+.ln .t, .ln .o { display: block; }
+.m-orig .ln .t { display: none; }
+.m-tr .ln .o { display: none; }
+.m-both .ln .o { font-size: 0.62em; font-weight: 500; opacity: 0.8; margin-top: 0.15em; }
+.m-both .ln.no-tr .o { display: none; }
+
+.toast {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  font: 500 12px ui-monospace, Menlo, Consolas, monospace;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 2px 8px;
+  border-radius: 6px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .track, .ln, .viewport, .toast { transition: none; }
+}

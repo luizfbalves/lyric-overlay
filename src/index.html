@@ -1,5 +1,15 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head><meta charset="UTF-8" /><title>Lyric Overlay</title></head>
-  <body><script type="module" src="./overlay/main.ts"></script></body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lyric Overlay</title>
+  </head>
+  <body>
+    <div id="overlay" class="hidden m-orig">
+      <div class="viewport" id="viewport"><div class="track" id="track"></div></div>
+      <div class="toast" id="toast"></div>
+    </div>
+    <script type="module" src="./overlay/main.ts"></script>
+  </body>
 </html>
