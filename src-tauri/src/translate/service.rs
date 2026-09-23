@@ -16,11 +16,21 @@ pub enum DeepLStatus {
     QuotaExceeded,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct TranslateSettings {
     pub mode: Mode,
     pub target: TargetLang,
     pub key: Option<String>,
+}
+
+impl std::fmt::Debug for TranslateSettings {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TranslateSettings")
+            .field("mode", &self.mode)
+            .field("target", &self.target)
+            .field("key", &self.key.as_ref().map(|_| "***"))
+            .finish()
+    }
 }
 
 pub struct TranslationService {
@@ -85,7 +95,13 @@ impl TranslationService {
         }
         let target = s.target.code();
         if let Some(hit) = self.cache.get(key, target) {
-            return hit.lines;
+            // Um hit cujo número de linhas não bate com a letra atual (ex.: LRC reemitido/
+            // reformatado para a mesma faixa) é tratado como miss: segue para retraduzir em
+            // vez de devolver linhas desalinhadas.
+            let stale = hit.lines.as_ref().is_some_and(|l| l.len() != lines.len());
+            if !stale {
+                return hit.lines;
+            }
         }
         // O gate de status só protege a chamada de rede: um hit de cache não depende da chave.
         if self.status() != DeepLStatus::Ok {
@@ -128,6 +144,10 @@ impl TranslationService {
 impl crate::sync::runtime::TrackTranslator for TranslationService {
     async fn translate_track(&self, key: &TrackKey, lines: &[String]) -> Option<Vec<String>> {
         TranslationService::translate_track(self, key, lines).await
+    }
+
+    fn current_target(&self) -> String {
+        self.settings().target.code().to_string()
     }
 }
 
@@ -288,9 +308,32 @@ mod tests {
         assert_eq!(f.svc.translate_track(&key(), &lines()).await, want);
     }
 
+    #[tokio::test]
+    async fn cache_hit_with_mismatched_line_count_is_retranslated() {
+        let s = MockServer::start().await;
+        Mock::given(path("/v2/translate")).respond_with(Echo("JA")).expect(2).mount(&s).await;
+        let f = fixture(&s, Mode::Both, Some("k"));
+        let want = Some(vec!["tr:um".to_string(), "".to_string(), "tr:dois".to_string()]);
+        assert_eq!(f.svc.translate_track(&key(), &lines()).await, want);
+
+        // A letra "atual" da mesma faixa agora tem uma quantidade diferente de linhas (ex.:
+        // LRC reemitido) — o hit de cache antigo (3 linhas) não pode ser reaproveitado.
+        let new_lines = vec!["um".to_string(), "dois".to_string()];
+        let want2 = Some(vec!["tr:um".to_string(), "tr:dois".to_string()]);
+        assert_eq!(f.svc.translate_track(&key(), &new_lines).await, want2);
+    }
+
     #[test]
     fn status_serializes_snake_case() {
         assert_eq!(serde_json::to_value(DeepLStatus::InvalidKey).unwrap(), "invalid_key");
         assert_eq!(serde_json::to_value(DeepLStatus::QuotaExceeded).unwrap(), "quota_exceeded");
+    }
+
+    #[test]
+    fn debug_redacts_key() {
+        let s = TranslateSettings { mode: Mode::Both, target: TargetLang::PtBr, key: Some("segredo-super-secreto".into()) };
+        let out = format!("{s:?}");
+        assert!(!out.contains("segredo-super-secreto"), "chave vazou no Debug: {out}");
+        assert!(out.contains("***"));
     }
 }

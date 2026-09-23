@@ -28,6 +28,9 @@ pub trait Sink: Send + Sync {
 #[async_trait]
 pub trait TrackTranslator: Send + Sync {
     async fn translate_track(&self, key: &TrackKey, lines: &[String]) -> Option<Vec<String>>;
+    /// Identificador do idioma alvo atual (ex.: código DeepL "PT-BR"). Usado para descartar
+    /// traduções que chegam depois de uma troca de idioma-alvo.
+    fn current_target(&self) -> String;
 }
 
 #[derive(Debug)]
@@ -57,7 +60,9 @@ pub struct Deps {
 
 enum Internal {
     Lyrics(TrackKey, Option<Lyrics>),
-    Translation(TrackKey, Option<Vec<String>>),
+    // Carrega o idioma-alvo capturado no momento em que a tradução foi pedida, para poder
+    // descartar o resultado se o alvo tiver mudado enquanto a tradução estava em voo.
+    Translation(TrackKey, String, Option<Vec<String>>),
 }
 
 fn spawn_fetch(deps: &Deps, itx: &UnboundedSender<Internal>, np: NowPlaying) {
@@ -75,9 +80,10 @@ fn spawn_fetch(deps: &Deps, itx: &UnboundedSender<Internal>, np: NowPlaying) {
 fn spawn_translate(deps: &Deps, itx: &UnboundedSender<Internal>, key: TrackKey, lines: Vec<String>) {
     let tr = deps.translator.clone();
     let itx = itx.clone();
+    let target = tr.current_target();
     tokio::spawn(async move {
         let res = tr.translate_track(&key, &lines).await;
-        let _ = itx.send(Internal::Translation(key, res));
+        let _ = itx.send(Internal::Translation(key, target, res));
     });
 }
 
@@ -125,8 +131,9 @@ pub async fn run(deps: Deps, mut engine: Engine, mut cmds: UnboundedReceiver<Syn
                     let fx = engine.on_lyrics(&key, l);
                     apply(&deps, &itx, fx);
                 }
-                Internal::Translation(key, lines) => {
-                    if engine.current_track() == Some(&key) {
+                Internal::Translation(key, target, lines) => {
+                    let stale_target = deps.translator.current_target() != target;
+                    if engine.current_track() == Some(&key) && !stale_target {
                         deps.sink.emit(OverlayEvent::TranslationLoaded(lines.unwrap_or_default()));
                     }
                 }
@@ -183,6 +190,38 @@ mod tests {
     impl TrackTranslator for FakeTranslator {
         async fn translate_track(&self, _: &TrackKey, lines: &[String]) -> Option<Vec<String>> {
             Some(lines.iter().map(|l| format!("tr:{l}")).collect())
+        }
+        fn current_target(&self) -> String {
+            "PT-BR".into()
+        }
+    }
+
+    /// Tradutor controlável: só resolve `translate_track` quando `release()` é chamado, e
+    /// permite trocar o idioma-alvo "atual" enquanto a tradução está em voo — para simular
+    /// uma resposta antiga chegando depois de uma troca de idioma.
+    struct GatedTranslator {
+        target: Mutex<String>,
+        gate: tokio::sync::Notify,
+    }
+    impl GatedTranslator {
+        fn new(target: &str) -> Self {
+            Self { target: Mutex::new(target.to_string()), gate: tokio::sync::Notify::new() }
+        }
+        fn set_target(&self, t: &str) {
+            *self.target.lock().unwrap() = t.to_string();
+        }
+        fn release(&self) {
+            self.gate.notify_one();
+        }
+    }
+    #[async_trait]
+    impl TrackTranslator for GatedTranslator {
+        async fn translate_track(&self, _: &TrackKey, lines: &[String]) -> Option<Vec<String>> {
+            self.gate.notified().await;
+            Some(lines.iter().map(|l| format!("tr:{l}")).collect())
+        }
+        fn current_target(&self) -> String {
+            self.target.lock().unwrap().clone()
         }
     }
 
@@ -242,5 +281,51 @@ mod tests {
 
         drop(tx);
         tokio::time::timeout(Duration::from_secs(1), handle).await.unwrap().unwrap();
+    }
+
+    #[tokio::test]
+    async fn stale_translation_after_language_switch_is_discarded() {
+        let np = NowPlaying {
+            title: "Canção Teste".into(),
+            artist: "Banda Fictícia".into(),
+            album: "Álbum Inventado".into(),
+            duration_ms: 180_000,
+            position_ms: 6000,
+            is_playing: true,
+        };
+        let rec = Arc::new(Recorder::default());
+        let translator = Arc::new(GatedTranslator::new("PT-BR"));
+        let deps = Deps {
+            player: Arc::new(FakePlayer(Mutex::new(Some(np)))),
+            lyrics: Arc::new(FakeLyrics),
+            translator: translator.clone(),
+            sink: rec.clone(),
+        };
+        let (_tx, rx) = mpsc::unbounded_channel();
+        let timing = Timing { poll: Duration::from_millis(20), tick: Duration::from_millis(5) };
+        let handle = tokio::spawn(run(deps, Engine::new(HashMap::new()), rx, timing));
+
+        // Espera a letra carregar: nesse ponto a tradução já foi disparada (e capturou o
+        // alvo "PT-BR"), mas está presa no `gate` do GatedTranslator.
+        tokio::time::sleep(Duration::from_millis(100)).await;
+        assert!(rec
+            .events
+            .lock()
+            .unwrap()
+            .contains(&OverlayEvent::LyricsLoaded(vec!["um".into(), "dois".into()])));
+        assert!(!rec.events.lock().unwrap().iter().any(|e| matches!(e, OverlayEvent::TranslationLoaded(_))));
+
+        // Troca de idioma-alvo enquanto a tradução ainda está em voo, depois libera a resposta
+        // antiga (ainda no idioma anterior).
+        translator.set_target("EN-US");
+        translator.release();
+        tokio::time::sleep(Duration::from_millis(100)).await;
+
+        assert!(
+            !rec.events.lock().unwrap().iter().any(|e| matches!(e, OverlayEvent::TranslationLoaded(_))),
+            "tradução presa no idioma antigo não deveria ter sido aplicada"
+        );
+
+        handle.abort();
     }
 }
