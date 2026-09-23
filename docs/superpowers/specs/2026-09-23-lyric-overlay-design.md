@@ -68,7 +68,8 @@ pub trait Player: Send + Sync {
 
 - Tarefa `tokio` que consulta o `Player` a cada **1 s**.
 - Entre consultas, estima a posição: `last_position + (now - last_poll_instant)` quando `is_playing`.
-- Tick de render a cada **100 ms**: calcula `line_at(estimated + offset)`. Se o índice mudou, emite `line-changed { text }`. Linha vazia emite texto vazio (o frontend faz fade-out).
+- Quando a letra carrega, emite `lyrics-loaded { lines: string[] }` (a letra inteira, uma vez por faixa).
+- Tick de render a cada **100 ms**: calcula `line_at(estimated + offset)`. Se o índice mudou, emite `line-changed { index }` (`-1` antes da primeira linha).
 - A cada consulta, se `|posição real − estimada| > 1500 ms` (seek), ressincroniza imediatamente.
 - Troca de faixa (chave diferente): limpa o estado, emite `hide`, dispara `lyrics::fetch` em background e só volta a exibir quando a letra chega.
 - Emite `hide` quando: `Ok(None)`, `is_playing == false`, letra ausente ou erro de rede.
@@ -76,9 +77,10 @@ pub trait Player: Send + Sync {
 
 ### Frontend (overlay)
 
-- Janela Tauri: `transparent: true`, `decorations: false`, `alwaysOnTop: true`, `skipTaskbar: true`, `resizable: false`, `shadow: false`. Largura ~900 px, altura ~80 px. No macOS: `macOSPrivateApi: true` para transparência, e `visible_on_all_workspaces`.
-- Mostra uma linha centralizada, fonte do sistema ~26 px, branca, com `text-shadow` forte para legibilidade em qualquer fundo. Textos longos quebram em no máximo 2 linhas com ellipsis.
-- Transição: fade de ~150 ms na troca de linha.
+- Janela Tauri: `transparent: true`, `decorations: false`, `alwaysOnTop: true`, `skipTaskbar: true`, `resizable: false`, `shadow: false`. Largura ~900 px, altura ~130 px (3 linhas visíveis). No macOS: `macOSPrivateApi: true` para transparência, e `visible_on_all_workspaces`.
+- **Rolagem estilo letreiro:** a letra inteira é renderizada numa coluna (`track`) dentro de uma área de ~3 linhas de altura (`viewport`). A linha atual fica centralizada, opaca e em escala 1. As vizinhas ficam com ~30% de opacidade e escala ~0,85, e uma `mask-image` em gradiente faz o topo e o rodapé desaparecerem.
+- Na troca de linha, o `track` desliza com `translateY` (~550 ms, easing suave) até centralizar a nova linha, e opacidade/escala fazem a transição junto. Linhas vazias (pausas instrumentais) aparecem como `• • •`.
+- Fonte do sistema ~25 px, branca, com `text-shadow` forte para legibilidade em qualquer fundo. Com `prefers-reduced-motion`, a troca é instantânea.
 - `hide` esconde o conteúdo (opacity 0). A janela continua existindo e com o clique atravessando.
 
 ### Interação
@@ -111,7 +113,7 @@ Player (1 s) ──► sync ──(faixa nova)──► lyrics.fetch ──► c
                    │                                       │
                    └── tick 100 ms: line_at(pos + offset) ◄┘
                                    │
-                        event line-changed / hide
+                        lyrics-loaded / line-changed / hide
                                    ▼
                             Overlay (webview)
 ```
