@@ -113,7 +113,7 @@ pub trait Translator: Send + Sync {
 - **Ícone na barra de menus (macOS) / bandeja (Windows):** é o ponto central de opções do app, pensado para receber itens futuros.
   - macOS: ícone monocromático *template* (se adapta a tema claro/escuro) na barra de menus. O app não aparece no Dock (`ActivationPolicy::Accessory`).
   - Windows: ícone na bandeja do sistema.
-  - Menu inicial: título da faixa atual (desabilitado, informativo) · separador · "Mostrar/ocultar letra" · "Editar posição" · "Resetar offset desta faixa" · "Preferências…" (`Cmd+,` no macOS) · separador · "☕ Me paga um café" · separador · "Sair".
+  - Menu inicial: título da faixa atual (desabilitado, informativo) · separador · "Mostrar/ocultar letra" · "Editar posição" · "Resetar offset desta faixa" · "Preferências…" (`Cmd+,` no macOS) · separador · "Buy me a coffee" (com o logo oficial do BMC, via `IconMenuItem`) · separador · "Sair".
   - O menu é montado num único módulo `tray.rs` a partir de uma lista de itens, para adicionar opções novas sem mexer no resto.
 
 ### Modo de tradução
@@ -144,10 +144,11 @@ pub trait Translator: Send + Sync {
   - link **"Já tenho conta: ver minhas chaves"** → `https://www.deepl.com/your-account/keys`.
 - Mostra o uso do mês e avisos de chave inválida ou cota esgotada.
 
-**Rodapé:** botão amarelo **"☕ Me paga um café"** ao lado de "Restaurar padrão".
+**Rodapé:** botão oficial do Buy Me a Coffee (`src/assets/bmc/bmc-button.svg`, ~34 px de altura) ao lado de "Restaurar padrão".
 
 ### Buy Me a Coffee
 
+- Assets oficiais do brand kit em `src/assets/bmc/`: `bmc-button.svg` (botão), `bmc-logo.svg` (logo) e `bmc-logo.png` (ícone do item de menu nativo).
 - URL em uma constante única `SUPPORT_URL` (`https://buymeacoffee.com/<usuario>`), usada pelo item do menu do ícone e pelo botão da janela de Preferências. Abre no navegador padrão via `tauri-plugin-opener`.
 - Cada mudança é aplicada na hora: a janela de Aparência chama o comando `set_appearance`, o backend salva na config e emite `appearance-changed` para o overlay, que atualiza variáveis CSS (`--ov-font`, `--ov-color`, `--ov-bg`) e recentraliza a linha atual.
 
