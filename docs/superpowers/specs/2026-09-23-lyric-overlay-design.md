@@ -127,11 +127,12 @@ pub trait Translator: Send + Sync {
 
 **Aparência**
 
-- **Fonte:** 4 predefinições, com as fontes empacotadas no app como `woff2` (licença OFL), para ficarem iguais no macOS e no Windows:
+- **Fonte:** 5 predefinições, com as fontes empacotadas no app como `woff2` (licença OFL), para ficarem iguais no macOS e no Windows:
   - Sistema (`-apple-system` / `Segoe UI`, não empacotada)
   - Arredondada: Nunito
   - Serifada: Lora
   - Mono: JetBrains Mono
+  - Manuscrita: Caveat (latim), com Yomogi como fallback para japonês (Caveat não tem glifos CJK)
 - **Cor do texto:** 5 amostras (branco, amarelo, verde, azul, grafite) + seletor de cor livre. Padrão: branco.
 - **Fundo:** "sem fundo" (padrão) + 3 amostras (preto, azul-noite, branco) + seletor de cor livre + slider de opacidade (10–100%, padrão 60%, desabilitado quando sem fundo). O fundo é uma pílula arredondada que envolve só a linha em destaque (largura ajustada ao texto; no modo "ambos", cobre tradução + original) e acompanha o foco com transição de ~400 ms. As linhas vizinhas nunca têm fundo e mantêm o `text-shadow` forte; a linha em destaque perde o `text-shadow` quando há fundo.
 - Botão "Restaurar padrão".
@@ -165,7 +166,7 @@ Arquivo JSON em `app_config_dir()/config.json`:
 }
 ```
 
-`font` ∈ `system | rounded | serif | mono`; `mode` ∈ `original | translated | both`. Valores inválidos ou ausentes voltam ao padrão.
+`font` ∈ `system | rounded | serif | mono | handwritten`; `mode` ∈ `original | translated | both`. Valores inválidos ou ausentes voltam ao padrão.
 
 Posição padrão: centralizado horizontalmente, a ~120 px da borda inferior do monitor principal. Se a posição salva estiver fora de todos os monitores, volta ao padrão.
 
@@ -214,7 +215,7 @@ Nenhum erro é mostrado no overlay; o app nunca trava por falha externa.
 ```
 lyric-overlay/
 ├── src/                 # frontend: overlay (index.html, main.ts, style.css) e prefs.html/prefs.ts
-│   └── fonts/           # Nunito, Lora, JetBrains Mono (woff2)
+│   └── fonts/           # Nunito, Lora, JetBrains Mono, Caveat, Yomogi (woff2)
 └── src-tauri/src/
     ├── main.rs          # setup Tauri, janela, atalhos
     ├── tray.rs          # ícone da barra de menus/bandeja + menu
