@@ -1,5 +1,78 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head><meta charset="UTF-8" /><title>Preferências</title></head>
-  <body><script type="module" src="./prefs/main.ts"></script></body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Preferências</title>
+  </head>
+  <body>
+    <main>
+      <section>
+        <h2>Aparência</h2>
+        <div class="field">
+          <span class="lbl">Fonte</span>
+          <div class="fonts" id="fonts"></div>
+        </div>
+        <div class="field">
+          <span class="lbl">Tamanho</span>
+          <div class="seg" id="sizes">
+            <button data-size="0.8">Pequeno</button>
+            <button data-size="1">Médio</button>
+            <button data-size="1.25">Grande</button>
+            <button data-size="1.5">Enorme</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="lbl">Cor do texto</span>
+          <div class="sw" id="txt-sw">
+            <button data-c="#ffffff" title="Branco"></button>
+            <button data-c="#ffe066" title="Amarelo"></button>
+            <button data-c="#8ce99a" title="Verde"></button>
+            <button data-c="#74c0fc" title="Azul"></button>
+            <button data-c="#343a40" title="Grafite"></button>
+            <input type="color" id="txt-pick" title="Outra cor" />
+          </div>
+        </div>
+        <div class="field">
+          <span class="lbl">Fundo</span>
+          <div class="sw" id="bg-sw">
+            <button data-c="" class="none" title="Sem fundo">∅</button>
+            <button data-c="#000000" title="Preto"></button>
+            <button data-c="#0b1d3a" title="Azul-noite"></button>
+            <button data-c="#ffffff" title="Branco"></button>
+            <input type="color" id="bg-pick" title="Outra cor" />
+          </div>
+          <label class="range">Opacidade <input type="range" id="bg-op" min="10" max="100" step="5" /> <output id="bg-opv"></output></label>
+        </div>
+      </section>
+
+      <section>
+        <h2>Tradução</h2>
+        <div class="field">
+          <label class="lbl" for="key">Chave da API DeepL</label>
+          <input type="password" id="key" placeholder="cole sua chave aqui" autocomplete="off" spellcheck="false" />
+          <small id="key-status"></small>
+        </div>
+        <div class="field">
+          <label class="lbl" for="lang">Traduzir para</label>
+          <select id="lang">
+            <option value="PT-BR">Português (Brasil)</option>
+            <option value="EN-US">Inglês (EUA)</option>
+            <option value="ES">Espanhol</option>
+          </select>
+        </div>
+        <div class="field row">
+          <button class="btn primary" id="deepl-signup">Criar chave grátis no DeepL</button>
+          <a href="#" id="deepl-keys">Já tenho conta: ver minhas chaves</a>
+        </div>
+        <p class="note" id="usage"></p>
+        <p class="warn" id="warn" hidden></p>
+      </section>
+    </main>
+    <footer>
+      <button class="bmc" id="bmc" title="Buy me a coffee"><img id="bmc-img" alt="Buy me a coffee" /></button>
+      <button class="btn" id="reset">Restaurar padrão</button>
+    </footer>
+    <script type="module" src="./prefs/main.ts"></script>
+  </body>
 </html>
