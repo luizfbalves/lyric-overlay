@@ -18,12 +18,14 @@ fn edit() -> Shortcut {
     Shortcut::new(Some(primary() | Modifiers::SHIFT), Code::KeyL)
 }
 
+// Cmd/Ctrl+Alt+Shift (em vez de só Cmd/Ctrl+Shift) para não colidir com a seleção de
+// texto do sistema em Cmd/Ctrl+Shift+seta.
 fn earlier() -> Shortcut {
-    Shortcut::new(Some(primary() | Modifiers::SHIFT), Code::ArrowLeft)
+    Shortcut::new(Some(primary() | Modifiers::ALT | Modifiers::SHIFT), Code::ArrowLeft)
 }
 
 fn later() -> Shortcut {
-    Shortcut::new(Some(primary() | Modifiers::SHIFT), Code::ArrowRight)
+    Shortcut::new(Some(primary() | Modifiers::ALT | Modifiers::SHIFT), Code::ArrowRight)
 }
 
 fn send(app: &AppHandle, cmd: SyncCmd) {

@@ -109,7 +109,7 @@ pub trait Translator: Send + Sync {
 - **`Cmd/Ctrl+Shift+L`** alterna o modo de edição:
   - Ligado: `set_ignore_cursor_events(false)`, borda tracejada visível, texto de exemplo se estiver oculto, arraste via `data-tauri-drag-region`.
   - Desligado: salva a posição da janela na config e volta o clique a atravessar.
-- **`Cmd/Ctrl+Shift+←` / `→`**: offset −/+250 ms para a faixa atual. Mostra um aviso rápido "offset +250 ms" por 1 s no overlay.
+- **`Cmd/Ctrl+Alt+Shift+←` / `→`**: offset −/+250 ms para a faixa atual. Mostra um aviso rápido "offset +250 ms" por 1 s no overlay. (Correção pós-revisão: `Cmd/Ctrl+Shift+←/→` colidia com o atalho de seleção de texto do sistema; adicionado `Alt` para desambiguar.)
 - **Ícone na barra de menus (macOS) / bandeja (Windows):** é o ponto central de opções do app, pensado para receber itens futuros.
   - macOS: ícone monocromático *template* (se adapta a tema claro/escuro) na barra de menus. O app não aparece no Dock (`ActivationPolicy::Accessory`).
   - Windows: ícone na bandeja do sistema.
