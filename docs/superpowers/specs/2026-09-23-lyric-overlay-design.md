@@ -118,7 +118,7 @@ pub trait Translator: Send + Sync {
 
 ### Modo de tradução
 
-- Três modos: **Só original**, **Só tradução**, **Original + tradução** (padrão quando há chave). No modo duplo, a tradução aparece embaixo de cada linha, em ~62% do tamanho e peso menor. A área visível do overlay cresce para ~170 px nesse modo.
+- Três modos: **Só original**, **Só tradução**, **Original + tradução** (padrão quando há chave). No modo duplo, a **tradução é a linha principal** (tamanho cheio, em cima) e o original aparece embaixo, em ~62% do tamanho, peso menor e opacidade ~80%. A área visível do overlay cresce para ~170 px nesse modo.
 - Troca pelo menu do ícone (itens de rádio com ✓, sob o título "Tradução"). Salvo na config.
 
 ### Preferências
