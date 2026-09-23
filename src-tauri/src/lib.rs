@@ -25,6 +25,7 @@ pub fn run() {
         .plugin(shortcuts::plugin())
         .invoke_handler(tauri::generate_handler![
             commands::get_overlay_init,
+            commands::finish_edit,
             commands::get_settings,
             commands::set_appearance,
             commands::set_translation,

@@ -48,6 +48,8 @@ pub struct AppState {
     pub cmds: UnboundedSender<SyncCmd>,
     pub snapshot: Mutex<Snapshot>,
     pub edit_mode: AtomicBool,
+    /// Posição da janela quando o modo de edição foi ligado, para "reverter".
+    pub edit_origin: Mutex<Option<(i32, i32)>>,
     pub tray: Mutex<Option<TrayHandles>>,
 }
 
@@ -60,6 +62,7 @@ impl AppState {
             cmds,
             snapshot: Mutex::new(Snapshot::default()),
             edit_mode: AtomicBool::new(false),
+            edit_origin: Mutex::new(None),
             tray: Mutex::new(None),
         }
     }

@@ -38,6 +38,11 @@ pub fn get_overlay_init(state: State<'_, AppState>) -> OverlayInit {
 }
 
 #[tauri::command]
+pub fn finish_edit(app: AppHandle, keep: bool) {
+    overlay::finish_edit(&app, keep);
+}
+
+#[tauri::command]
 pub fn get_settings(state: State<'_, AppState>) -> SettingsView {
     let cfg = state.config();
     SettingsView {

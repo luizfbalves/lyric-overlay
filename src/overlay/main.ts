@@ -88,8 +88,15 @@ function showToast(text: string) {
 }
 
 root.addEventListener("mousedown", (e) => {
+  if ((e.target as HTMLElement).closest(".act")) return;
   if (editing && e.button === 0) void getCurrentWindow().startDragging();
 });
+
+for (const [id, keep] of [["edit-ok", true], ["edit-undo", false]] as const) {
+  document.getElementById(id)!.addEventListener("click", () => {
+    invoke("finish_edit", { keep }).catch((err) => console.error(err));
+  });
+}
 
 new ResizeObserver(() => focus()).observe(viewport);
 document.fonts?.ready.then(() => focus());

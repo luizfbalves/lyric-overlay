@@ -66,14 +66,36 @@ fn save_position(app: &AppHandle, win: &WebviewWindow) {
 }
 
 pub fn toggle_edit(app: &AppHandle) {
+    let on = !app.state::<AppState>().edit_mode.load(Ordering::SeqCst);
+    set_edit(app, on);
+}
+
+/// Sai do modo de edição. `keep = false` devolve a janela à posição de antes da edição.
+pub fn finish_edit(app: &AppHandle, keep: bool) {
+    let st = app.state::<AppState>();
+    if !st.edit_mode.load(Ordering::SeqCst) {
+        return;
+    }
+    if !keep {
+        let origin = *st.edit_origin.lock().unwrap();
+        if let (Some((x, y)), Some(win)) = (origin, window(app)) {
+            if let Err(e) = win.set_position(PhysicalPosition::new(x, y)) {
+                eprintln!("reverter posição: {e}");
+            }
+        }
+    }
+    set_edit(app, false);
+}
+
+fn set_edit(app: &AppHandle, on: bool) {
     let Some(win) = window(app) else { return };
     let st = app.state::<AppState>();
-    let on = !st.edit_mode.load(Ordering::SeqCst);
     st.edit_mode.store(on, Ordering::SeqCst);
     if let Err(e) = win.set_ignore_cursor_events(!on) {
         eprintln!("ignore_cursor_events: {e}");
     }
     if on {
+        *st.edit_origin.lock().unwrap() = win.outer_position().ok().map(|p| (p.x, p.y));
         let _ = win.show();
     } else {
         save_position(app, &win);
