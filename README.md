@@ -36,7 +36,7 @@ This program will not transfer any information to other networked systems unless
 To do its job, Verso sends the following requests:
 
 - **LRCLIB** (https://lrclib.net): the title, artist, album and duration of the track playing in Spotify, to fetch synced lyrics.
-- **DeepL** (https://www.deepl.com): only if the user enables translation and enters their own API key. The lyric lines are sent to be translated.
+- **Verso translation server** ([proxy/](proxy/), a Cloudflare Worker): only if the user turns on translation. The lyric lines are forwarded to Microsoft Azure Translator and the result is kept in a shared cache with no user identifiers. The client IP is used only for rate limiting, hashed, in counters that expire within two days.
 
 No analytics or telemetry is collected.
 

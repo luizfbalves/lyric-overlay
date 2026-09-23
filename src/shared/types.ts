@@ -1,7 +1,7 @@
 export type FontId = "system" | "rounded" | "serif" | "mono" | "handwritten";
 export type Mode = "original" | "translated" | "both";
 export type TargetLang = "PT-BR" | "EN-US" | "ES";
-export type DeepLStatus = "ok" | "invalid_key" | "quota_exceeded";
+export type TranslateStatus = "ok" | "quota_exceeded";
 
 export interface Appearance {
   font: FontId;
@@ -33,13 +33,8 @@ export interface OverlayInit {
 export interface SettingsView {
   appearance: Appearance;
   translation: TranslationCfg;
-  has_key: boolean;
-  deepl_status: DeepLStatus;
-}
-
-export interface Usage {
-  character_count: number;
-  character_limit: number;
+  translation_enabled: boolean;
+  translate_status: TranslateStatus;
 }
 
 export const DEFAULT_APPEARANCE: Appearance = {

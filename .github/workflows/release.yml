@@ -1,9 +1,9 @@
 name: Release
 
+# Só uma tag nova gera build: `git tag v0.3.0 && git push origin v0.3.0`.
 on:
   push:
     tags: ["v*"]
-  workflow_dispatch:
 
 permissions:
   contents: write

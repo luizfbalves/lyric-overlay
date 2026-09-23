@@ -28,7 +28,7 @@ pub trait Sink: Send + Sync {
 #[async_trait]
 pub trait TrackTranslator: Send + Sync {
     async fn translate_track(&self, key: &TrackKey, lines: &[String]) -> Option<Vec<String>>;
-    /// Identificador do idioma alvo atual (ex.: código DeepL "PT-BR"). Usado para descartar
+    /// Identificador do idioma alvo atual (ex.: "PT-BR"). Usado para descartar
     /// traduções que chegam depois de uma troca de idioma-alvo.
     fn current_target(&self) -> String;
 }

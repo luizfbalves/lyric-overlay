@@ -1,0 +1,20 @@
+name = "verso-translate"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+[vars]
+AZURE_REGION = "brazilsouth"      # região do recurso Translator na Azure
+MONTHLY_BUDGET = "1900000"        # abaixo dos 2M do F0: os contadores no KV são aproximados
+IP_DAILY_CHARS = "60000"          # ~30 músicas novas por dia por IP
+
+# Criado com `npx wrangler kv namespace create CACHE`; troque pelo id que o comando imprimir.
+[[kv_namespaces]]
+binding = "CACHE"
+id = "COLOQUE_O_ID_DO_KV_AQUI"
+
+[[ratelimits]]
+name = "LIMITER"
+namespace_id = "1001"
+simple = { limit = 30, period = 60 }
+
+# A chave fica fora do repositório: `npx wrangler secret put AZURE_KEY`.

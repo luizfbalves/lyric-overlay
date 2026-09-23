@@ -49,11 +49,6 @@
       <section id="translation" hidden>
         <h2>Tradução</h2>
         <div class="field">
-          <label class="lbl" for="key">Chave da API DeepL</label>
-          <input type="password" id="key" placeholder="cole sua chave aqui" autocomplete="off" spellcheck="false" />
-          <small id="key-status"></small>
-        </div>
-        <div class="field">
           <label class="lbl" for="lang">Traduzir para</label>
           <select id="lang">
             <option value="PT-BR">Português (Brasil)</option>
@@ -61,11 +56,10 @@
             <option value="ES">Espanhol</option>
           </select>
         </div>
-        <div class="field row">
-          <button class="btn primary" id="deepl-signup">Criar chave grátis no DeepL</button>
-          <a href="#" id="deepl-keys">Já tenho conta: ver minhas chaves</a>
-        </div>
-        <p class="note" id="usage"></p>
+        <p class="note">
+          Ligue a tradução no menu do Verso, em <strong>Tradução</strong>. As linhas da letra passam pelo
+          servidor do Verso e são traduzidas pelo Microsoft Translator.
+        </p>
         <p class="warn" id="warn" hidden></p>
       </section>
     </main>

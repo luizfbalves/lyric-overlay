@@ -29,9 +29,10 @@ pub enum FontId {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum Mode {
+    // Tradução é opt-in: a letra só sai do computador quando o usuário escolhe traduzir.
+    #[default]
     Original,
     Translated,
-    #[default]
     Both,
 }
 
@@ -52,6 +53,15 @@ impl TargetLang {
             TargetLang::PtBr => "PT-BR",
             TargetLang::EnUs => "EN-US",
             TargetLang::Es => "ES",
+        }
+    }
+
+    /// Código de idioma da Azure Translator, que o proxy repassa.
+    pub fn azure_code(&self) -> &'static str {
+        match self {
+            TargetLang::PtBr => "pt",
+            TargetLang::EnUs => "en",
+            TargetLang::Es => "es",
         }
     }
 }
@@ -230,7 +240,7 @@ mod tests {
         assert_eq!(c, Config::default());
         assert_eq!(c.appearance.size, 1.0);
         assert_eq!(c.appearance.bg_opacity, 60);
-        assert_eq!(c.translation.mode, Mode::Both);
+        assert_eq!(c.translation.mode, Mode::Original);
         assert_eq!(c.translation.target_lang, TargetLang::PtBr);
     }
 

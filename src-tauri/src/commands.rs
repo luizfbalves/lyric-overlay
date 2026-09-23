@@ -2,9 +2,8 @@ use crate::config::{Appearance, Mode, TranslationCfg};
 use crate::links::{self, Link};
 use crate::state::{AppState, Snapshot};
 use crate::sync::runtime::SyncCmd;
-use crate::translate::deepl::Usage;
-use crate::translate::service::DeepLStatus;
-use crate::{overlay, secrets, tray};
+use crate::translate::{self, service::TranslateStatus};
+use crate::{overlay, tray};
 use serde::Serialize;
 use serde_json::json;
 use std::sync::atomic::Ordering;
@@ -22,8 +21,8 @@ pub struct OverlayInit {
 pub struct SettingsView {
     appearance: Appearance,
     translation: TranslationCfg,
-    has_key: bool,
-    deepl_status: DeepLStatus,
+    translation_enabled: bool,
+    translate_status: TranslateStatus,
 }
 
 #[tauri::command]
@@ -48,8 +47,8 @@ pub fn get_settings(state: State<'_, AppState>) -> SettingsView {
     SettingsView {
         appearance: cfg.appearance,
         translation: cfg.translation,
-        has_key: state.translation.settings().key.is_some(),
-        deepl_status: state.translation.status(),
+        translation_enabled: translate::ENABLED,
+        translate_status: state.translation.status(),
     }
 }
 
@@ -74,20 +73,6 @@ pub fn apply_translation(app: &AppHandle, t: TranslationCfg) {
 #[tauri::command]
 pub fn set_translation(app: AppHandle, translation: TranslationCfg) {
     apply_translation(&app, translation);
-}
-
-#[tauri::command]
-pub fn set_deepl_key(state: State<'_, AppState>, key: String) -> Result<(), String> {
-    secrets::store_key(&key)?;
-    let k = key.trim();
-    state.translation.set_key((!k.is_empty()).then(|| k.to_string()));
-    let _ = state.cmds.send(SyncCmd::Retranslate);
-    Ok(())
-}
-
-#[tauri::command]
-pub async fn get_deepl_usage(state: State<'_, AppState>) -> Result<Usage, String> {
-    state.translation.usage().await.map_err(|e| format!("{e:?}"))
 }
 
 #[tauri::command]

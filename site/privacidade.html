@@ -31,7 +31,7 @@
         <p class="fine">Atualizada em 23 de setembro de 2026.</p>
 
         <p>
-          O Verso não tem conta, não tem servidor próprio e não coleta estatísticas de uso.
+          O Verso não tem conta e não coleta estatísticas de uso.
           Ele só se conecta à internet para buscar a letra da música que está tocando e, se você pedir, para traduzi-la.
         </p>
 
@@ -42,8 +42,10 @@
             para buscar a letra sincronizada. É um banco aberto mantido pela comunidade.
           </li>
           <li>
-            <strong><a href="https://www.deepl.com/privacy">DeepL</a></strong>: só se você ativar a tradução e informar a sua própria chave de API.
-            Nesse caso, as linhas da letra são enviadas para tradução, sob a política de privacidade do DeepL.
+            <strong>Tradução</strong>: só se você ligar a tradução no menu do Verso. As linhas da letra vão para o servidor de tradução do Verso
+            (hospedado na Cloudflare), que as repassa ao <a href="https://privacy.microsoft.com/pt-br/privacystatement">Microsoft Translator</a>.
+            A tradução fica num cache compartilhado, sem nada que identifique quem pediu. O seu endereço IP é usado só para limitar abusos,
+            em forma de hash, e esse contador se apaga em até dois dias.
           </li>
         </ul>
         <p>Nenhuma outra informação é enviada: nem identificadores do seu computador, nem dados da sua conta do Spotify.</p>
@@ -51,8 +53,7 @@
         <h3>O que fica no seu computador</h3>
         <ul>
           <li>As preferências do app (posição, aparência, atalhos), num arquivo de configuração local.</li>
-          <li>As traduções já feitas, em cache, para não repetir chamadas ao DeepL.</li>
-          <li>A chave do DeepL, guardada no cofre de senhas do sistema (Chaves no macOS, Gerenciador de Credenciais no Windows).</li>
+          <li>As traduções já feitas, em cache, para não pedir de novo a mesma letra.</li>
         </ul>
         <p>Desinstalar o app e apagar essas pastas remove tudo.</p>
 

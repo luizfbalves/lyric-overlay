@@ -5,21 +5,19 @@ import { FONT_LABELS, FONT_STACKS } from "../shared/fonts";
 import {
   DEFAULT_APPEARANCE,
   type Appearance,
-  type DeepLStatus,
   type FontId,
   type Mode,
   type SettingsView,
   type TargetLang,
+  type TranslateStatus,
   type TranslationCfg,
-  type Usage,
 } from "../shared/types";
 import "./style.css";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
 let appearance: Appearance = { ...DEFAULT_APPEARANCE };
-let translation: TranslationCfg = { mode: "both", target_lang: "PT-BR" };
-let hasKey = false;
+let translation: TranslationCfg = { mode: "original", target_lang: "PT-BR" };
 let saveTimer: number | undefined;
 
 function saveAppearance() {
@@ -74,30 +72,14 @@ function renderAppearance() {
   $("bg-opv").textContent = `${appearance.bg_opacity}%`;
 }
 
-function renderStatus(status: DeepLStatus) {
+function renderStatus(status: TranslateStatus) {
   const warn = $("warn");
-  const msg: Record<DeepLStatus, string> = {
+  const msg: Record<TranslateStatus, string> = {
     ok: "",
-    invalid_key: "Chave DeepL inválida. Mostrando só a letra original até você trocar a chave.",
-    quota_exceeded: "Cota grátis do DeepL deste mês esgotada. Mostrando só a letra original.",
+    quota_exceeded: "A cota grátis de tradução deste mês acabou. Mostrando só a letra original até o mês virar.",
   };
   warn.textContent = msg[status];
   warn.hidden = status === "ok";
-}
-
-async function loadUsage() {
-  const el = $("usage");
-  if (!hasKey) {
-    el.textContent = "Sem chave: a letra aparece só no idioma original.";
-    return;
-  }
-  try {
-    const u = await invoke<Usage>("get_deepl_usage");
-    const fmt = new Intl.NumberFormat("pt-BR");
-    el.textContent = `Uso do mês: ${fmt.format(u.character_count)} / ${fmt.format(u.character_limit)} caracteres`;
-  } catch {
-    el.textContent = "Não foi possível consultar o uso do DeepL agora.";
-  }
 }
 
 function wire() {
@@ -115,32 +97,11 @@ function wire() {
   $<HTMLInputElement>("bg-op").oninput = (e) => setAppearance({ bg_opacity: Number((e.target as HTMLInputElement).value) });
   $("reset").onclick = () => setAppearance({ ...DEFAULT_APPEARANCE });
 
-  const key = $<HTMLInputElement>("key");
-  key.onchange = async () => {
-    const status = $("key-status");
-    try {
-      await invoke("set_deepl_key", { key: key.value });
-      hasKey = key.value.trim() !== "";
-      status.textContent = hasKey ? "Chave salva no cofre do sistema." : "Chave removida.";
-      key.value = "";
-      key.placeholder = hasKey ? "•••••••• (salva)" : "cole sua chave aqui";
-      renderStatus("ok");
-      void loadUsage();
-    } catch (err) {
-      status.textContent = `Não foi possível salvar a chave: ${err}`;
-    }
-  };
-
   $<HTMLSelectElement>("lang").onchange = (e) => {
     translation = { ...translation, target_lang: (e.target as HTMLSelectElement).value as TargetLang };
     void invoke("set_translation", { translation });
   };
 
-  $("deepl-signup").onclick = () => invoke("open_link", { link: "deepl_signup" }).catch((err) => console.error(err));
-  $("deepl-keys").onclick = (e) => {
-    e.preventDefault();
-    invoke("open_link", { link: "deepl_keys" }).catch((err) => console.error(err));
-  };
   $("bmc").onclick = () => invoke("open_link", { link: "support" }).catch((err) => console.error(err));
   $<HTMLImageElement>("bmc-img").src = bmcButton;
 }
@@ -152,17 +113,15 @@ async function main() {
     translation = { mode: e.payload.mode, target_lang: e.payload.target_lang };
     $<HTMLSelectElement>("lang").value = translation.target_lang;
   });
-  await listen<DeepLStatus>("deepl-status", (e) => renderStatus(e.payload));
+  await listen<TranslateStatus>("translate-status", (e) => renderStatus(e.payload));
 
   const s = await invoke<SettingsView>("get_settings");
   appearance = s.appearance;
   translation = s.translation;
-  hasKey = s.has_key;
+  $("translation").hidden = !s.translation_enabled;
   $<HTMLSelectElement>("lang").value = translation.target_lang;
-  $<HTMLInputElement>("key").placeholder = hasKey ? "•••••••• (salva)" : "cole sua chave aqui";
   renderAppearance();
-  renderStatus(s.deepl_status);
-  if (!$("translation").hidden) void loadUsage();
+  renderStatus(s.translate_status);
 }
 
 void main();

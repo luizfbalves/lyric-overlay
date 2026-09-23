@@ -31,7 +31,7 @@
         <p class="fine">Last updated September 23, 2026.</p>
 
         <p>
-          Verso has no accounts, no server of its own and collects no usage statistics.
+          Verso has no accounts and collects no usage statistics.
           It only goes online to fetch the lyrics of the song that's playing and, if you ask it to, to translate them.
         </p>
 
@@ -42,8 +42,10 @@
             to fetch synced lyrics. It's an open, community-maintained database.
           </li>
           <li>
-            <strong><a href="https://www.deepl.com/privacy">DeepL</a></strong>: only if you turn on translation and enter your own API key.
-            In that case the lyric lines are sent for translation, under DeepL's privacy policy.
+            <strong>Translation</strong>: only if you turn on translation in Verso's menu. The lyric lines go to Verso's translation server
+            (hosted on Cloudflare), which forwards them to <a href="https://privacy.microsoft.com/en-us/privacystatement">Microsoft Translator</a>.
+            The translation is kept in a shared cache with nothing that identifies who asked for it. Your IP address is used only to limit abuse,
+            as a hash, and that counter is deleted within two days.
           </li>
         </ul>
         <p>Nothing else is sent: no identifiers for your computer and no data from your Spotify account.</p>
@@ -51,8 +53,7 @@
         <h3>What stays on your computer</h3>
         <ul>
           <li>The app's preferences (position, appearance, shortcuts), in a local config file.</li>
-          <li>Translations already made, cached so DeepL isn't called twice for the same lyrics.</li>
-          <li>Your DeepL key, stored in the system's password vault (Keychain on macOS, Credential Manager on Windows).</li>
+          <li>Translations already made, cached so the same lyrics aren't requested twice.</li>
         </ul>
         <p>Uninstalling the app and deleting those folders removes everything.</p>
 

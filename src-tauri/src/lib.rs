@@ -7,7 +7,6 @@ pub mod lyrics;
 pub mod overlay;
 pub mod player;
 pub mod prefs;
-pub mod secrets;
 pub mod shortcuts;
 pub mod sink;
 pub mod state;
@@ -29,8 +28,6 @@ pub fn run() {
             commands::get_settings,
             commands::set_appearance,
             commands::set_translation,
-            commands::set_deepl_key,
-            commands::get_deepl_usage,
             commands::open_link,
         ])
         .setup(|app| {
@@ -52,12 +49,11 @@ pub fn run() {
                 translate::service::TranslateSettings {
                     mode: cfg.translation.mode,
                     target: cfg.translation.target_lang,
-                    key: secrets::load_key(),
                 },
-                translate::deepl::DEEPL_FREE_URL,
+                translate::PROXY_URL,
                 Duration::from_secs(10),
                 Box::new(move |s| {
-                    let _ = status_handle.emit("deepl-status", s);
+                    let _ = status_handle.emit("translate-status", s);
                 }),
             ));
 

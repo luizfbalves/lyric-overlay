@@ -1,9 +1,11 @@
 pub mod cache;
-pub mod deepl;
+pub mod proxy;
 pub mod service;
 
-/// Tradução oculta por enquanto: o app mostra só a letra original.
-pub const ENABLED: bool = false;
+/// Proxy de tradução (proxy/, Cloudflare Worker na frente da Azure Translator).
+/// Vazio = tradução oculta: o app mostra só a letra original.
+pub const PROXY_URL: &str = "";
+pub const ENABLED: bool = !PROXY_URL.is_empty();
 
 use async_trait::async_trait;
 
@@ -15,7 +17,6 @@ pub struct Translated {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TranslateError {
-    InvalidKey,
     QuotaExceeded,
     Network(String),
     Unexpected(String),
