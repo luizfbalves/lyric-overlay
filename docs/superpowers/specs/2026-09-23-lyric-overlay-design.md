@@ -20,7 +20,7 @@ App desktop pessoal (macOS e Windows) que mostra, num overlay flutuante, **somen
 - Letras não sincronizadas (texto puro), karaokê palavra por palavra.
 - Tradutores além do DeepL (Claude API fica para uma versão paga futura; a trait `Translator` já deixa o encaixe pronto).
 - Outros players além do Spotify.
-- Configurações além de aparência, posição e offset (ex.: tamanho da fonte, número de linhas visíveis, atalhos customizáveis).
+- Configurações além de aparência, posição e offset (ex.: tamanho livre em px, número de linhas visíveis, atalhos customizáveis).
 - Instalador, auto-update, assinatura de código.
 
 ## Stack
@@ -133,6 +133,7 @@ pub trait Translator: Send + Sync {
   - Serifada: Lora
   - Mono: JetBrains Mono
   - Manuscrita: Caveat (latim), com Yomogi como fallback para japonês (Caveat não tem glifos CJK)
+- **Tamanho:** 4 predefinições — Pequeno (0,8×), Médio (1×, padrão), Grande (1,25×), Enorme (1,5×). O fator escala junto a fonte, a altura e a largura da janela (base 900×130 px, ou ×170 no modo "ambos"); a largura é limitada a 90% do monitor atual. Ao trocar, a janela é redimensionada mantendo o centro no mesmo ponto e a posição é salva.
 - **Cor do texto:** 5 amostras (branco, amarelo, verde, azul, grafite) + seletor de cor livre. Padrão: branco.
 - **Fundo:** "sem fundo" (padrão) + 3 amostras (preto, azul-noite, branco) + seletor de cor livre + slider de opacidade (10–100%, padrão 60%, desabilitado quando sem fundo). O fundo é uma pílula arredondada que envolve só a linha em destaque (largura ajustada ao texto; no modo "ambos", cobre tradução + original) e acompanha o foco com transição de ~400 ms. As linhas vizinhas nunca têm fundo e mantêm o `text-shadow` forte; a linha em destaque perde o `text-shadow` quando há fundo.
 - Botão "Restaurar padrão".
@@ -161,12 +162,12 @@ Arquivo JSON em `app_config_dir()/config.json`:
 {
   "window": { "x": 0, "y": 0 },
   "offsets": { "<artist>|<title>|<duration_s>": 250 },
-  "appearance": { "font": "system", "text_color": "#ffffff", "bg_color": null, "bg_opacity": 60 },
+  "appearance": { "font": "system", "size": 1.0, "text_color": "#ffffff", "bg_color": null, "bg_opacity": 60 },
   "translation": { "mode": "both", "target_lang": "PT-BR" }
 }
 ```
 
-`font` ∈ `system | rounded | serif | mono | handwritten`; `mode` ∈ `original | translated | both`. Valores inválidos ou ausentes voltam ao padrão.
+`font` ∈ `system | rounded | serif | mono | handwritten`; `size` ∈ `0.8 | 1.0 | 1.25 | 1.5`; `mode` ∈ `original | translated | both`. Valores inválidos ou ausentes voltam ao padrão.
 
 Posição padrão: centralizado horizontalmente, a ~120 px da borda inferior do monitor principal. Se a posição salva estiver fora de todos os monitores, volta ao padrão.
 
