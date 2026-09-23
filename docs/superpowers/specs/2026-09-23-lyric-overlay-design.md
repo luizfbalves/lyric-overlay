@@ -17,7 +17,8 @@ App desktop pessoal (macOS e Windows) que mostra, num overlay flutuante, **somen
 
 ### Fora de escopo
 
-- Letras não sincronizadas (texto puro), tradução, karaokê palavra por palavra.
+- Letras não sincronizadas (texto puro), karaokê palavra por palavra.
+- Tradutores além do DeepL (Claude API fica para uma versão paga futura; a trait `Translator` já deixa o encaixe pronto).
 - Outros players além do Spotify.
 - Configurações além de aparência, posição e offset (ex.: tamanho da fonte, número de linhas visíveis, atalhos customizáveis).
 - Instalador, auto-update, assinatura de código.
@@ -25,11 +26,11 @@ App desktop pessoal (macOS e Windows) que mostra, num overlay flutuante, **somen
 ## Stack
 
 - **Tauri 2** (backend em Rust, frontend em HTML/CSS/TS sem framework).
-- Crates: `tauri`, `tauri-plugin-global-shortcut`, `reqwest` (rustls), `serde`/`serde_json`, `tokio`, `windows` (somente Windows, para SMTC).
+- Crates: `tauri`, `tauri-plugin-global-shortcut`, `reqwest` (rustls), `serde`/`serde_json`, `tokio`, `keyring` (chave DeepL no Keychain/Credential Manager), `windows` (somente Windows, para SMTC).
 
 ## Arquitetura
 
-Backend Rust com três módulos independentes, mais o frontend.
+Backend Rust com quatro módulos independentes, mais o frontend.
 
 ### `player`: leitura do Spotify
 
@@ -64,11 +65,30 @@ pub trait Player: Send + Sync {
 - `Lyrics::line_at(position_ms) -> Option<usize>`: busca binária; `None` antes da primeira linha.
 - **Cache em memória** por chave `(artist, title, duration_s)`: guarda `Some(Lyrics)` ou "sem letra", para não repetir buscas.
 
+### `translate`: tradução linha a linha
+
+```rust
+pub struct Translated { pub lines: Vec<String>, pub source_lang: String }
+
+#[async_trait]
+pub trait Translator: Send + Sync {
+    async fn translate(&self, lines: &[String], target: &str) -> Result<Translated, TranslateError>;
+}
+```
+
+- **`DeepLTranslator`:** `POST https://api-free.deepl.com/v2/translate` com header `Authorization: DeepL-Auth-Key <chave>`, corpo `{ "text": [...], "target_lang": "PT-BR" }`. Envia só as linhas não vazias, em lotes de até 50, e remonta mantendo o índice original. Linhas vazias continuam vazias, então os tempos da letra não mudam.
+- Se o `detected_source_language` for igual ao idioma-alvo (ex.: música em português com alvo PT-BR), descarta a tradução e marca a faixa como "não precisa".
+- **Cache em disco** em `app_cache_dir()/translations/<hash(chave da faixa + alvo)>.json`, para nunca traduzir a mesma faixa duas vezes. Cache de faixa "não precisa" também é gravado.
+- Só roda se houver chave configurada e o modo não for "Só original".
+- Erros: 403 (chave inválida) → modo cai para "Só original" até a chave mudar, com aviso na janela de Preferências; 456 (cota do mês esgotada) → idem, com aviso de cota; rede/timeout (10 s) → mostra o original e tenta de novo na próxima faixa.
+- A chave fica no cofre do sistema (`keyring`: Keychain no macOS, Credential Manager no Windows), **nunca** no `config.json`.
+- Uso do mês: `GET /v2/usage` quando a janela de Preferências abre, exibido como "X / 500.000 caracteres".
+
 ### `sync`: loop de sincronização
 
 - Tarefa `tokio` que consulta o `Player` a cada **1 s**.
 - Entre consultas, estima a posição: `last_position + (now - last_poll_instant)` quando `is_playing`.
-- Quando a letra carrega, emite `lyrics-loaded { lines: string[] }` (a letra inteira, uma vez por faixa).
+- Quando a letra carrega, emite `lyrics-loaded { lines: string[] }` (a letra inteira, uma vez por faixa). Quando a tradução chega (logo depois, em background), emite `translation-loaded { lines: string[] }` com o mesmo número de linhas. Até lá o overlay mostra só o original.
 - Tick de render a cada **100 ms**: calcula `line_at(estimated + offset)`. Se o índice mudou, emite `line-changed { index }` (`-1` antes da primeira linha).
 - A cada consulta, se `|posição real − estimada| > 1500 ms` (seek), ressincroniza imediatamente.
 - Troca de faixa (chave diferente): limpa o estado, emite `hide`, dispara `lyrics::fetch` em background e só volta a exibir quando a letra chega.
@@ -96,9 +116,17 @@ pub trait Player: Send + Sync {
   - Menu inicial: título da faixa atual (desabilitado, informativo) · separador · "Mostrar/ocultar letra" · "Editar posição" · "Resetar offset desta faixa" · "Aparência…" (`Cmd+,` no macOS) · separador · "Sair".
   - O menu é montado num único módulo `tray.rs` a partir de uma lista de itens, para adicionar opções novas sem mexer no resto.
 
-### Aparência
+### Modo de tradução
 
-- Janela separada "Aparência" (Tauri, com decoração normal, ~560×300, não redimensionável), aberta pelo item "Aparência…" do menu. Se já estiver aberta, só ganha foco.
+- Três modos: **Só original**, **Só tradução**, **Original + tradução** (padrão quando há chave). No modo duplo, a tradução aparece embaixo de cada linha, em ~62% do tamanho e peso menor. A área visível do overlay cresce para ~170 px nesse modo.
+- Troca pelo menu do ícone (itens de rádio com ✓, sob o título "Tradução"). Salvo na config.
+
+### Preferências
+
+- Janela separada "Preferências" (Tauri, com decoração normal, ~560×440, não redimensionável), aberta pelo item "Preferências…" do menu. Se já estiver aberta, só ganha foco. Tem duas seções: **Aparência** e **Tradução**.
+
+**Aparência**
+
 - **Fonte:** 4 predefinições, com as fontes empacotadas no app como `woff2` (licença OFL), para ficarem iguais no macOS e no Windows:
   - Sistema (`-apple-system` / `Segoe UI`, não empacotada)
   - Arredondada: Nunito
@@ -107,6 +135,11 @@ pub trait Player: Send + Sync {
 - **Cor do texto:** 5 amostras (branco, amarelo, verde, azul, grafite) + seletor de cor livre. Padrão: branco.
 - **Fundo:** "sem fundo" (padrão) + 3 amostras (preto, azul-noite, branco) + seletor de cor livre + slider de opacidade (10–100%, padrão 60%, desabilitado quando sem fundo). O fundo é um retângulo arredondado atrás da área de 3 linhas. Com fundo, o `text-shadow` é removido; sem fundo, fica o `text-shadow` forte.
 - Botão "Restaurar padrão".
+
+**Tradução**
+
+- Campo da chave DeepL (tipo senha; salvo no `keyring` ao sair do campo) e seletor de idioma-alvo (Português (Brasil), Inglês (EUA), Espanhol; padrão PT-BR).
+- Mostra o uso do mês e avisos de chave inválida ou cota esgotada.
 - Cada mudança é aplicada na hora: a janela de Aparência chama o comando `set_appearance`, o backend salva na config e emite `appearance-changed` para o overlay, que atualiza variáveis CSS (`--ov-font`, `--ov-color`, `--ov-bg`) e recentraliza a linha atual.
 
 ### Config
@@ -117,18 +150,19 @@ Arquivo JSON em `app_config_dir()/config.json`:
 {
   "window": { "x": 0, "y": 0 },
   "offsets": { "<artist>|<title>|<duration_s>": 250 },
-  "appearance": { "font": "system", "text_color": "#ffffff", "bg_color": null, "bg_opacity": 60 }
+  "appearance": { "font": "system", "text_color": "#ffffff", "bg_color": null, "bg_opacity": 60 },
+  "translation": { "mode": "both", "target_lang": "PT-BR" }
 }
 ```
 
-`font` ∈ `system | rounded | serif | mono`. Valores inválidos ou ausentes voltam ao padrão.
+`font` ∈ `system | rounded | serif | mono`; `mode` ∈ `original | translated | both`. Valores inválidos ou ausentes voltam ao padrão.
 
 Posição padrão: centralizado horizontalmente, a ~120 px da borda inferior do monitor principal. Se a posição salva estiver fora de todos os monitores, volta ao padrão.
 
 ## Fluxo de dados
 
 ```
-Player (1 s) ──► sync ──(faixa nova)──► lyrics.fetch ──► cache
+Player (1 s) ──► sync ──(faixa nova)──► lyrics.fetch ──► cache ──► translate (DeepL, cache em disco)
                    │                                       │
                    └── tick 100 ms: line_at(pos + offset) ◄┘
                                    │
@@ -147,6 +181,8 @@ Player (1 s) ──► sync ──(faixa nova)──► lyrics.fetch ──► c
 | Seek | ressincroniza quando o desvio passa de 1,5 s |
 | macOS nega permissão de Automação | loga o erro, `hide`; o polling continua (funciona quando a permissão for concedida) |
 | Erro inesperado do player | loga, trata como `None` |
+| DeepL 403 / 456 | mostra só o original; aviso na janela de Preferências |
+| DeepL rede/timeout | mostra só o original; tenta de novo na próxima faixa |
 
 Nenhum erro é mostrado no overlay; o app nunca trava por falha externa.
 
@@ -158,6 +194,7 @@ Nenhum erro é mostrado no overlay; o app nunca trava por falha externa.
   - Estimativa de posição e detecção de seek (relógio injetável).
   - Lógica do `sync` com `FakePlayer` e letra fake: troca de faixa, pausa, offset.
   - `config`: leitura com campos ausentes/inválidos cai no padrão; `appearance` faz round-trip.
+- **`translate`:** mock HTTP do DeepL cobrindo lote com linhas vazias (índices preservados), mais de 50 linhas (vários lotes), idioma de origem igual ao alvo, 403, 456 e timeout; cache em disco com round-trip e hit.
 - **Cliente LRCLIB:** servidor HTTP mock (`wiremock` ou `mockito`) cobrindo 200, 404 + fallback `/search`, e timeout.
 - **Fixtures:** somente textos inventados; nenhuma letra real no repositório.
 - **Manual:** `MacSpotifyPlayer` no macOS e `WinSmtcPlayer` no Windows; overlay com clique atravessando, modo de edição e persistência de posição em ambos.
@@ -174,5 +211,6 @@ lyric-overlay/
     ├── config.rs        # inclui Appearance + validação
     ├── player/{mod.rs, macos.rs, windows.rs}
     ├── lyrics/{mod.rs, lrc.rs, lrclib.rs}
+    ├── translate/{mod.rs, deepl.rs, cache.rs}
     └── sync.rs
 ```
