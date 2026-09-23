@@ -59,6 +59,12 @@ fn geometry_inner(app: &AppHandle, win: &WebviewWindow, initial: bool) -> tauri:
     Ok(())
 }
 
+fn save_position(app: &AppHandle, win: &WebviewWindow) {
+    if let Ok(p) = win.outer_position() {
+        app.state::<AppState>().update_config(|c| c.window = Some(WindowPos { x: p.x, y: p.y }));
+    }
+}
+
 pub fn toggle_edit(app: &AppHandle) {
     let Some(win) = window(app) else { return };
     let st = app.state::<AppState>();
@@ -69,10 +75,22 @@ pub fn toggle_edit(app: &AppHandle) {
     }
     if on {
         let _ = win.show();
-    } else if let Ok(p) = win.outer_position() {
-        st.update_config(|c| c.window = Some(WindowPos { x: p.x, y: p.y }));
+    } else {
+        save_position(app, &win);
     }
     let _ = app.emit("edit-mode", json!({ "on": on }));
+}
+
+/// Se o overlay estiver em modo de edição (ex.: ao sair pelo menu "Sair"), salva a posição
+/// atual da janela na config antes de encerrar — mesmo caminho usado por `toggle_edit` ao
+/// desligar o modo de edição.
+pub fn save_position_if_editing(app: &AppHandle) {
+    let st = app.state::<AppState>();
+    if st.edit_mode.load(Ordering::SeqCst) {
+        if let Some(win) = window(app) {
+            save_position(app, &win);
+        }
+    }
 }
 
 pub fn toggle_visible(app: &AppHandle) {
