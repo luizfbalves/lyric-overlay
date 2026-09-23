@@ -124,6 +124,13 @@ impl TranslationService {
     }
 }
 
+#[async_trait::async_trait]
+impl crate::sync::runtime::TrackTranslator for TranslationService {
+    async fn translate_track(&self, key: &TrackKey, lines: &[String]) -> Option<Vec<String>> {
+        TranslationService::translate_track(self, key, lines).await
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

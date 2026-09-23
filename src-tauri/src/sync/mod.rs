@@ -3,6 +3,8 @@ use crate::player::{NowPlaying, TrackKey};
 use std::collections::HashMap;
 use std::time::Instant;
 
+pub mod runtime;
+
 pub const SEEK_THRESHOLD_MS: i64 = 1500;
 pub const OFFSET_STEP_MS: i64 = 250;
 
