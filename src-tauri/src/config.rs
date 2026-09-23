@@ -143,8 +143,19 @@ impl Config {
 
 pub fn load(path: &Path) -> Config {
     match std::fs::read_to_string(path) {
-        Ok(s) => serde_json::from_str::<Config>(&s).unwrap_or_default().normalized(),
-        Err(_) => Config::default(),
+        Ok(s) => match serde_json::from_str::<Config>(&s) {
+            Ok(c) => c.normalized(),
+            Err(e) => {
+                eprintln!("config corrompida em {}: {e}", path.display());
+                Config::default()
+            }
+        },
+        Err(e) => {
+            if e.kind() != std::io::ErrorKind::NotFound {
+                eprintln!("ler config em {}: {e}", path.display());
+            }
+            Config::default()
+        }
     }
 }
 
@@ -222,17 +233,20 @@ mod tests {
     fn round_trip() {
         let d = tmp();
         let p = d.path().join("sub/config.json");
-        let mut c = Config::default();
-        c.window = Some(WindowPos { x: -300, y: 40 });
-        c.offsets.insert("Banda Fictícia|Canção Teste|180".into(), 250);
-        c.appearance = Appearance {
-            font: FontId::Handwritten,
-            size: 1.25,
-            text_color: "#ffe066".into(),
-            bg_color: Some("#0b1d3a".into()),
-            bg_opacity: 80,
+        let mut offsets = HashMap::new();
+        offsets.insert("Banda Fictícia|Canção Teste|180".into(), 250);
+        let c = Config {
+            window: Some(WindowPos { x: -300, y: 40 }),
+            offsets,
+            appearance: Appearance {
+                font: FontId::Handwritten,
+                size: 1.25,
+                text_color: "#ffe066".into(),
+                bg_color: Some("#0b1d3a".into()),
+                bg_opacity: 80,
+            },
+            translation: TranslationCfg { mode: Mode::Translated, target_lang: TargetLang::Es },
         };
-        c.translation = TranslationCfg { mode: Mode::Translated, target_lang: TargetLang::Es };
         save(&p, &c).unwrap();
         assert_eq!(load(&p), c);
     }

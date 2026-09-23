@@ -69,12 +69,12 @@ impl AppState {
     }
 
     pub fn update_config(&self, f: impl FnOnce(&mut Config)) {
-        let snapshot = {
-            let mut c = self.config.lock().unwrap();
-            f(&mut c);
-            c.clone()
-        };
-        if let Err(e) = config::save(&self.config_path, &snapshot) {
+        // O save acontece com o lock ainda seguro: é I/O pequeno e local, e evita que dois
+        // escritores concorrentes disputem o mesmo `config.json.tmp` ou que uma versão velha
+        // sobrescreva uma mais nova gravada entre o `clone` e o `save`.
+        let mut c = self.config.lock().unwrap();
+        f(&mut c);
+        if let Err(e) = config::save(&self.config_path, &c) {
             eprintln!("salvar config: {e}");
         }
     }
