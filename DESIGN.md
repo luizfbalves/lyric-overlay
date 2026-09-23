@@ -1,4 +1,4 @@
-# DESIGN.md — site do Lyric Overlay (`site/`)
+# DESIGN.md — site do Verso (`site/`)
 
 ## Contexto
 - **Artefato:** landing page de download de um app desktop pessoal, gratuito (macOS/Windows).

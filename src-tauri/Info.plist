@@ -3,6 +3,6 @@
 <plist version="1.0">
 <dict>
   <key>NSAppleEventsUsageDescription</key>
-  <string>O Lyric Overlay lê a música atual do Spotify para mostrar a letra sincronizada.</string>
+  <string>O Verso lê a música atual do Spotify para mostrar a letra sincronizada.</string>
 </dict>
 </plist>

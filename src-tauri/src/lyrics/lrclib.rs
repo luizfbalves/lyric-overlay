@@ -34,7 +34,7 @@ impl LrclibClient {
     pub fn with_timeout(base: &str, timeout: Duration) -> Self {
         let http = reqwest::Client::builder()
             .timeout(timeout)
-            .user_agent(concat!("lyric-overlay/", env!("CARGO_PKG_VERSION"), " (uso pessoal)"))
+            .user_agent(concat!("verso/", env!("CARGO_PKG_VERSION"), " (uso pessoal)"))
             .build()
             .expect("cliente HTTP");
         Self { http, base: base.trim_end_matches('/').to_string() }

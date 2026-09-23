@@ -42,8 +42,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: Lyric Overlay ${{ github.ref_name }}
-          releaseBody: Baixe o instalador do seu sistema abaixo. Instruções em https://luizfbalves.github.io/lyric-overlay/
+          releaseName: Verso ${{ github.ref_name }}
+          releaseBody: Baixe o instalador do seu sistema abaixo. Instruções em https://luizfbalves.github.io/verso/
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}

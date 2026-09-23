@@ -1,5 +1,5 @@
 use crate::config::{Mode, TranslationCfg};
-use crate::icon::{note_rgba, ICON_PX};
+use crate::icon::{disc_rgba, ICON_PX};
 use crate::links::{self, Link};
 use crate::state::AppState;
 use crate::sync::runtime::SyncCmd;
@@ -100,9 +100,9 @@ pub fn build(app: &AppHandle) -> tauri::Result<()> {
     let menu = Menu::with_items(app, &refs)?;
 
     TrayIconBuilder::with_id("main")
-        .icon(Image::new_owned(note_rgba(ICON_PX), ICON_PX, ICON_PX))
+        .icon(Image::new_owned(disc_rgba(ICON_PX), ICON_PX, ICON_PX))
         .icon_as_template(true)
-        .tooltip("Lyric Overlay")
+        .tooltip("Verso")
         .menu(&menu)
         .show_menu_on_left_click(true)
         .on_menu_event(|app, ev| handle(app, ev.id().as_ref()))

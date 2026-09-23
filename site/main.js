@@ -39,7 +39,7 @@ if (!reduced) {
 }
 
 // Downloads: aponta os botões direto para os instaladores da última release.
-const REPO = "luizfbalves/lyric-overlay";
+const REPO = "luizfbalves/verso";
 const PICK = {
   "mac-arm": (n) => /aarch64\.dmg$/i.test(n),
   "mac-intel": (n) => /x64\.dmg$/i.test(n),

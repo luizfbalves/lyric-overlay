@@ -40,6 +40,7 @@ pub fn run() {
             let handle = app.handle().clone();
             let config_path = app.path().app_config_dir()?.join("config.json");
             let cache_dir = app.path().app_cache_dir()?.join("translations");
+            config::migrate_legacy(&config_path);
             let mut cfg = config::load(&config_path);
             if !translate::ENABLED {
                 cfg.translation.mode = config::Mode::Original;
@@ -78,5 +79,5 @@ pub fn run() {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("erro ao iniciar o Lyric Overlay");
+        .expect("erro ao iniciar o Verso");
 }

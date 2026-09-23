@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Lyric Overlay",
-  "version": "0.1.0",
-  "identifier": "dev.luizfbalves.lyricoverlay",
+  "productName": "Verso",
+  "version": "0.2.0",
+  "identifier": "dev.luizfbalves.verso",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
@@ -15,7 +15,7 @@
       {
         "label": "overlay",
         "url": "index.html",
-        "title": "Lyric Overlay",
+        "title": "Verso",
         "width": 900,
         "height": 170,
         "transparent": true,

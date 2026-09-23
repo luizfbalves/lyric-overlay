@@ -1,5 +1,6 @@
 use keyring::Entry;
 
+// Identificador antigo (de quando o app se chamava Lyric Overlay), mantido para não perder a chave salva.
 const SERVICE: &str = "dev.luizfbalves.lyricoverlay";
 const USER: &str = "deepl-api-key";
 

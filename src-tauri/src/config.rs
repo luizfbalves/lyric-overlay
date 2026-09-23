@@ -141,6 +141,27 @@ impl Config {
     }
 }
 
+/// Identificador de quando o app se chamava Lyric Overlay.
+pub const LEGACY_IDENTIFIER: &str = "dev.luizfbalves.lyricoverlay";
+
+/// Se ainda não existe config em `path`, copia a do diretório do identificador antigo
+/// (irmão do diretório atual), preservando posição, aparência e offsets.
+pub fn migrate_legacy(path: &Path) {
+    if path.exists() {
+        return;
+    }
+    let Some(base) = path.parent().and_then(Path::parent) else { return };
+    let Some(name) = path.file_name() else { return };
+    let old = base.join(LEGACY_IDENTIFIER).join(name);
+    if !old.exists() {
+        return;
+    }
+    let copied = path.parent().map_or(Ok(()), std::fs::create_dir_all).and_then(|_| std::fs::copy(&old, path));
+    if let Err(e) = copied {
+        eprintln!("migrar config antiga: {e}");
+    }
+}
+
 pub fn load(path: &Path) -> Config {
     match std::fs::read_to_string(path) {
         Ok(s) => match serde_json::from_str::<Config>(&s) {
@@ -173,6 +194,30 @@ pub fn save(path: &Path, cfg: &Config) -> std::io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn migrates_legacy_config_once() {
+        let dir = tempfile::tempdir().unwrap();
+        let old = dir.path().join(LEGACY_IDENTIFIER);
+        std::fs::create_dir_all(&old).unwrap();
+        std::fs::write(old.join("config.json"), r#"{"offsets":{"a":1}}"#).unwrap();
+        let new = dir.path().join("dev.luizfbalves.verso").join("config.json");
+
+        migrate_legacy(&new);
+        assert_eq!(load(&new).offsets.get("a"), Some(&1));
+
+        std::fs::write(&new, r#"{"offsets":{"a":2}}"#).unwrap();
+        migrate_legacy(&new);
+        assert_eq!(load(&new).offsets.get("a"), Some(&2), "não sobrescreve config existente");
+    }
+
+    #[test]
+    fn migrate_without_legacy_is_noop() {
+        let dir = tempfile::tempdir().unwrap();
+        let new = dir.path().join("dev.luizfbalves.verso").join("config.json");
+        migrate_legacy(&new);
+        assert!(!new.exists());
+    }
 
     fn tmp() -> tempfile::TempDir {
         tempfile::tempdir().unwrap()
