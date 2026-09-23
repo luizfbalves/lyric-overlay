@@ -2,6 +2,9 @@ pub mod cache;
 pub mod deepl;
 pub mod service;
 
+/// Tradução oculta por enquanto: o app mostra só a letra original.
+pub const ENABLED: bool = false;
+
 use async_trait::async_trait;
 
 #[derive(Debug, Clone, PartialEq)]

@@ -30,7 +30,7 @@ enum Entry {
 
 fn entries() -> Vec<Entry> {
     use Entry::*;
-    vec![
+    let mut v = vec![
         TrackTitle,
         Separator,
         Action { id: "toggle-visible", label: "Mostrar/ocultar letra", accel: None },
@@ -47,7 +47,12 @@ fn entries() -> Vec<Entry> {
         Icon { id: "support", label: "Buy me a coffee", png: BMC_PNG },
         Separator,
         Action { id: "quit", label: "Sair", accel: None },
-    ]
+    ];
+    if !crate::translate::ENABLED {
+        v.retain(|e| !matches!(e, Header("Tradução") | ModeCheck(..)));
+        v.dedup_by(|a, b| matches!((a, b), (Separator, Separator)));
+    }
+    v
 }
 
 fn mode_id(m: Mode) -> &'static str {

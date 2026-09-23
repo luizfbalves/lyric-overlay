@@ -39,7 +39,10 @@ pub fn run() {
             let handle = app.handle().clone();
             let config_path = app.path().app_config_dir()?.join("config.json");
             let cache_dir = app.path().app_cache_dir()?.join("translations");
-            let cfg = config::load(&config_path);
+            let mut cfg = config::load(&config_path);
+            if !translate::ENABLED {
+                cfg.translation.mode = config::Mode::Original;
+            }
 
             let status_handle = handle.clone();
             let translation = Arc::new(translate::service::TranslationService::new(

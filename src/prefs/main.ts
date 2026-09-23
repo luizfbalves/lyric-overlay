@@ -162,7 +162,7 @@ async function main() {
   $<HTMLInputElement>("key").placeholder = hasKey ? "•••••••• (salva)" : "cole sua chave aqui";
   renderAppearance();
   renderStatus(s.deepl_status);
-  void loadUsage();
+  if (!$("translation").hidden) void loadUsage();
 }
 
 void main();
