@@ -1,4 +1,7 @@
 pub mod config;
+pub mod geometry;
+pub mod icon;
+pub mod links;
 pub mod lyrics;
 pub mod player;
 pub mod sync;
