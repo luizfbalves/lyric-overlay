@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lyric Overlay — a letra do Spotify por cima de tudo</title>
+    <meta name="description" content="App gratuito para macOS e Windows que mostra a letra sincronizada da música que toca no Spotify, flutuando sobre qualquer janela." />
+    <link rel="icon" href="icon.png" />
+    <link rel="preconnect" href="https://api.fontshare.com" />
+    <link href="https://api.fontshare.com/v2/css?f[]=gambetta@400,500,600,400i&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="sleeve">
+      <header class="catalog">
+        <span>LO–001</span>
+        <span class="catalog-title">Lyric Overlay</span>
+        <span>v<span data-version>0.1</span> · macOS / Windows</span>
+      </header>
+
+      <section class="hero">
+        <div class="hero-copy">
+          <h1>A letra, <em>no tempo</em> da música.</h1>
+          <p class="lede">
+            Um app pequeno e gratuito que mostra a letra sincronizada do que está tocando no Spotify,
+            flutuando por cima de qualquer janela — do editor de código ao navegador.
+          </p>
+          <div class="cta" id="downloads">
+            <a class="btn btn-primary" data-dl="mac-arm" href="https://github.com/luizfbalves/lyric-overlay/releases/latest">Baixar para macOS</a>
+            <a class="btn" data-dl="win" href="https://github.com/luizfbalves/lyric-overlay/releases/latest">Baixar para Windows</a>
+          </div>
+          <p class="fine">
+            Mac com Intel? <a data-dl="mac-intel" href="https://github.com/luizfbalves/lyric-overlay/releases/latest">Baixe esta versão</a>.
+            Todas as versões em <a href="https://github.com/luizfbalves/lyric-overlay/releases">Releases</a>.
+          </p>
+        </div>
+
+        <figure class="demo" aria-label="Demonstração: a linha atual da letra fica destacada enquanto a música toca">
+          <div class="demo-screen">
+            <div class="demo-fade"><div class="demo-track" id="demo-track"></div></div>
+          </div>
+          <figcaption>
+            <span>Fig. 1</span> A linha atual ganha destaque; as outras esmaecem. Letra de exemplo, inventada.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section class="side" aria-labelledby="side-a">
+        <h2 id="side-a"><span class="side-mark">Lado A</span> O que ele faz</h2>
+        <ol class="tracklist">
+          <li><span class="no">01</span><span class="name">Sincroniza com o Spotify</span><span class="lead"></span><span class="meta">automático</span></li>
+          <li><span class="no">02</span><span class="name">Fica por cima de todas as janelas</span><span class="lead"></span><span class="meta">sem roubar o clique</span></li>
+          <li><span class="no">03</span><span class="name">Cinco fontes, inclusive manuscrita</span><span class="lead"></span><span class="meta">Preferências</span></li>
+          <li><span class="no">04</span><span class="name">Tamanho, cor do texto e fundo da linha atual</span><span class="lead"></span><span class="meta">Preferências</span></li>
+          <li><span class="no">05</span><span class="name">Arraste para onde quiser na tela</span><span class="lead"></span><span class="meta"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>L</kbd></span></li>
+          <li><span class="no">06</span><span class="name">Letra adiantada ou atrasada? Ajuste por faixa</span><span class="lead"></span><span class="meta"><kbd>⌘</kbd><kbd>⌥</kbd><kbd>⇧</kbd><kbd>←</kbd><kbd>→</kbd></span></li>
+          <li><span class="no">07</span><span class="name">Mora na barra de menus, sem janela no Dock</span><span class="lead"></span><span class="meta">bandeja no Windows</span></li>
+        </ol>
+        <p class="note">No Windows, use <kbd>Ctrl</kbd> no lugar de <kbd>⌘</kbd> e <kbd>Alt</kbd> no lugar de <kbd>⌥</kbd>.</p>
+      </section>
+
+      <section class="side" aria-labelledby="side-b">
+        <h2 id="side-b"><span class="side-mark">Lado B</span> Instalar</h2>
+        <div class="install">
+          <div>
+            <h3>macOS</h3>
+            <ol class="steps">
+              <li><span>Abra o <code>.dmg</code> e arraste o app para Aplicativos.</span></li>
+              <li><span>Na primeira vez, clique com o botão direito no app e escolha <strong>Abrir</strong>. O app não é assinado pela Apple, então o duplo clique é bloqueado só nessa primeira abertura.</span></li>
+              <li><span>Quando o macOS perguntar, permita que o Lyric Overlay controle o <strong>Spotify</strong>. É assim que ele sabe o que está tocando.</span></li>
+            </ol>
+          </div>
+          <div>
+            <h3>Windows</h3>
+            <ol class="steps">
+              <li><span>Rode o instalador <code>.exe</code>.</span></li>
+              <li><span>Se o SmartScreen avisar, clique em <strong>Mais informações</strong> e depois em <strong>Executar assim mesmo</strong>.</span></li>
+              <li><span>Toque algo no app do Spotify para Windows. A letra aparece sozinha.</span></li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <footer class="colophon">
+        <div>
+          <h4>Créditos</h4>
+          <p>Feito por <a href="https://github.com/luizfbalves">@luizfbalves</a>. Letras sincronizadas vindas do <a href="https://lrclib.net">LRCLIB</a>, um banco aberto e mantido pela comunidade.</p>
+        </div>
+        <div>
+          <h4>Não é afiliado</h4>
+          <p>Spotify é marca da Spotify AB. Este é um projeto independente.</p>
+        </div>
+        <div>
+          <h4>Gostou?</h4>
+          <a class="bmc" href="https://buymeacoffee.com/luizfbalves"><img src="bmc-button.svg" alt="Buy me a coffee" width="180" height="51" /></a>
+        </div>
+      </footer>
+    </div>
+    <script src="main.js" type="module"></script>
+  </body>
+</html>
