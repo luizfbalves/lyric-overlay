@@ -19,7 +19,7 @@ App desktop pessoal (macOS e Windows) que mostra, num overlay flutuante, **somen
 
 - Letras não sincronizadas (texto puro), tradução, karaokê palavra por palavra.
 - Outros players além do Spotify.
-- Tela de configurações. Os únicos ajustes são posição e offset, feitos via atalho ou pelo menu do ícone.
+- Configurações além de aparência, posição e offset (ex.: tamanho da fonte, número de linhas visíveis, atalhos customizáveis).
 - Instalador, auto-update, assinatura de código.
 
 ## Stack
@@ -93,16 +93,35 @@ pub trait Player: Send + Sync {
 - **Ícone na barra de menus (macOS) / bandeja (Windows):** é o ponto central de opções do app, pensado para receber itens futuros.
   - macOS: ícone monocromático *template* (se adapta a tema claro/escuro) na barra de menus. O app não aparece no Dock (`ActivationPolicy::Accessory`).
   - Windows: ícone na bandeja do sistema.
-  - Menu inicial: título da faixa atual (desabilitado, informativo) · separador · "Mostrar/ocultar letra" · "Editar posição" · "Resetar offset desta faixa" · separador · "Sair".
+  - Menu inicial: título da faixa atual (desabilitado, informativo) · separador · "Mostrar/ocultar letra" · "Editar posição" · "Resetar offset desta faixa" · "Aparência…" (`Cmd+,` no macOS) · separador · "Sair".
   - O menu é montado num único módulo `tray.rs` a partir de uma lista de itens, para adicionar opções novas sem mexer no resto.
+
+### Aparência
+
+- Janela separada "Aparência" (Tauri, com decoração normal, ~560×300, não redimensionável), aberta pelo item "Aparência…" do menu. Se já estiver aberta, só ganha foco.
+- **Fonte:** 4 predefinições, com as fontes empacotadas no app como `woff2` (licença OFL), para ficarem iguais no macOS e no Windows:
+  - Sistema (`-apple-system` / `Segoe UI`, não empacotada)
+  - Arredondada: Nunito
+  - Serifada: Lora
+  - Mono: JetBrains Mono
+- **Cor do texto:** 5 amostras (branco, amarelo, verde, azul, grafite) + seletor de cor livre. Padrão: branco.
+- **Fundo:** "sem fundo" (padrão) + 3 amostras (preto, azul-noite, branco) + seletor de cor livre + slider de opacidade (10–100%, padrão 60%, desabilitado quando sem fundo). O fundo é um retângulo arredondado atrás da área de 3 linhas. Com fundo, o `text-shadow` é removido; sem fundo, fica o `text-shadow` forte.
+- Botão "Restaurar padrão".
+- Cada mudança é aplicada na hora: a janela de Aparência chama o comando `set_appearance`, o backend salva na config e emite `appearance-changed` para o overlay, que atualiza variáveis CSS (`--ov-font`, `--ov-color`, `--ov-bg`) e recentraliza a linha atual.
 
 ### Config
 
 Arquivo JSON em `app_config_dir()/config.json`:
 
 ```json
-{ "window": { "x": 0, "y": 0 }, "offsets": { "<artist>|<title>|<duration_s>": 250 } }
+{
+  "window": { "x": 0, "y": 0 },
+  "offsets": { "<artist>|<title>|<duration_s>": 250 },
+  "appearance": { "font": "system", "text_color": "#ffffff", "bg_color": null, "bg_opacity": 60 }
+}
 ```
+
+`font` ∈ `system | rounded | serif | mono`. Valores inválidos ou ausentes voltam ao padrão.
 
 Posição padrão: centralizado horizontalmente, a ~120 px da borda inferior do monitor principal. Se a posição salva estiver fora de todos os monitores, volta ao padrão.
 
@@ -138,6 +157,7 @@ Nenhum erro é mostrado no overlay; o app nunca trava por falha externa.
   - `line_at`: antes da primeira linha, exato, entre linhas, após a última.
   - Estimativa de posição e detecção de seek (relógio injetável).
   - Lógica do `sync` com `FakePlayer` e letra fake: troca de faixa, pausa, offset.
+  - `config`: leitura com campos ausentes/inválidos cai no padrão; `appearance` faz round-trip.
 - **Cliente LRCLIB:** servidor HTTP mock (`wiremock` ou `mockito`) cobrindo 200, 404 + fallback `/search`, e timeout.
 - **Fixtures:** somente textos inventados; nenhuma letra real no repositório.
 - **Manual:** `MacSpotifyPlayer` no macOS e `WinSmtcPlayer` no Windows; overlay com clique atravessando, modo de edição e persistência de posição em ambos.
@@ -146,11 +166,12 @@ Nenhum erro é mostrado no overlay; o app nunca trava por falha externa.
 
 ```
 lyric-overlay/
-├── src/                 # frontend: index.html, main.ts, style.css
+├── src/                 # frontend: overlay (index.html, main.ts, style.css) e prefs.html/prefs.ts
+│   └── fonts/           # Nunito, Lora, JetBrains Mono (woff2)
 └── src-tauri/src/
     ├── main.rs          # setup Tauri, janela, atalhos
     ├── tray.rs          # ícone da barra de menus/bandeja + menu
-    ├── config.rs
+    ├── config.rs        # inclui Appearance + validação
     ├── player/{mod.rs, macos.rs, windows.rs}
     ├── lyrics/{mod.rs, lrc.rs, lrclib.rs}
     └── sync.rs
