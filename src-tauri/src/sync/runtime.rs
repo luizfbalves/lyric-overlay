@@ -43,11 +43,18 @@ pub enum SyncCmd {
 pub struct Timing {
     pub poll: Duration,
     pub tick: Duration,
+    /// Esperas entre novas tentativas quando a busca de letra falha por rede (ex.: LRCLIB
+    /// sobrecarregado respondendo 503). Sem isso a faixa ficaria sem letra até trocar.
+    pub lyrics_retry: Vec<Duration>,
 }
 
 impl Default for Timing {
     fn default() -> Self {
-        Self { poll: Duration::from_secs(1), tick: Duration::from_millis(100) }
+        Self {
+            poll: Duration::from_secs(1),
+            tick: Duration::from_millis(100),
+            lyrics_retry: [2, 5, 10, 20, 30, 60, 60].map(Duration::from_secs).to_vec(),
+        }
     }
 }
 
@@ -65,14 +72,22 @@ enum Internal {
     Translation(TrackKey, String, Option<Vec<String>>),
 }
 
-fn spawn_fetch(deps: &Deps, itx: &UnboundedSender<Internal>, np: NowPlaying) {
+fn spawn_fetch(deps: &Deps, itx: &UnboundedSender<Internal>, retry: &[Duration], np: NowPlaying) {
     let src = deps.lyrics.clone();
     let itx = itx.clone();
+    let retry = retry.to_vec();
     tokio::spawn(async move {
-        let res = src.fetch(&np).await.unwrap_or_else(|e| {
-            eprintln!("letra: {e}");
-            None
-        });
+        let mut waits = retry.into_iter();
+        let res = loop {
+            match src.fetch(&np).await {
+                Ok(l) => break l,
+                Err(e) => {
+                    eprintln!("letra: {e}");
+                    let Some(w) = waits.next() else { break None };
+                    tokio::time::sleep(w).await;
+                }
+            }
+        };
         let _ = itx.send(Internal::Lyrics(np.key(), res));
     });
 }
@@ -87,14 +102,14 @@ fn spawn_translate(deps: &Deps, itx: &UnboundedSender<Internal>, key: TrackKey, 
     });
 }
 
-fn apply(deps: &Deps, itx: &UnboundedSender<Internal>, fx: Vec<Effect>) {
+fn apply(deps: &Deps, itx: &UnboundedSender<Internal>, retry: &[Duration], fx: Vec<Effect>) {
     for e in fx {
         match e {
             Effect::Hide => deps.sink.emit(OverlayEvent::Hide),
             Effect::Show => deps.sink.emit(OverlayEvent::Show),
             Effect::LineChanged(i) => deps.sink.emit(OverlayEvent::LineChanged(i)),
             Effect::TrackChanged(t) => deps.sink.track_changed(t),
-            Effect::FetchLyrics(np) => spawn_fetch(deps, itx, np),
+            Effect::FetchLyrics(np) => spawn_fetch(deps, itx, retry, np),
             Effect::LyricsLoaded(key, lines) => {
                 deps.sink.emit(OverlayEvent::LyricsLoaded(lines.clone()));
                 spawn_translate(deps, itx, key, lines);
@@ -120,16 +135,16 @@ pub async fn run(deps: Deps, mut engine: Engine, mut cmds: UnboundedReceiver<Syn
                     Err(e) => { eprintln!("player (task): {e}"); None }
                 };
                 let fx = engine.on_poll(np, Instant::now());
-                apply(&deps, &itx, fx);
+                apply(&deps, &itx, &timing.lyrics_retry, fx);
             }
             _ = tick.tick() => {
                 let fx = engine.on_tick(Instant::now());
-                apply(&deps, &itx, fx);
+                apply(&deps, &itx, &timing.lyrics_retry, fx);
             }
             Some(msg) = irx.recv() => match msg {
                 Internal::Lyrics(key, l) => {
                     let fx = engine.on_lyrics(&key, l);
-                    apply(&deps, &itx, fx);
+                    apply(&deps, &itx, &timing.lyrics_retry, fx);
                 }
                 Internal::Translation(key, target, lines) => {
                     let stale_target = deps.translator.current_target() != target;
@@ -182,6 +197,24 @@ mod tests {
     impl LyricsSource for FakeLyrics {
         async fn fetch(&self, _: &NowPlaying) -> Result<Option<Lyrics>, LyricsError> {
             Ok(Some(parse_lrc("[00:01.00]um\n[00:05.00]dois")))
+        }
+    }
+
+    /// Falha por rede nas primeiras `fails` chamadas e depois devolve a letra.
+    struct FlakyLyrics(Mutex<u32>);
+    #[async_trait]
+    impl LyricsSource for FlakyLyrics {
+        async fn fetch(&self, np: &NowPlaying) -> Result<Option<Lyrics>, LyricsError> {
+            let failed = {
+                let mut left = self.0.lock().unwrap();
+                let f = *left > 0;
+                *left = left.saturating_sub(1);
+                f
+            };
+            if failed {
+                return Err(LyricsError::Network("HTTP 503 Service Unavailable".into()));
+            }
+            FakeLyrics.fetch(np).await
         }
     }
 
@@ -261,7 +294,7 @@ mod tests {
             sink: rec.clone(),
         };
         let (tx, rx) = mpsc::unbounded_channel();
-        let timing = Timing { poll: Duration::from_millis(20), tick: Duration::from_millis(5) };
+        let timing = Timing { poll: Duration::from_millis(20), tick: Duration::from_millis(5), ..Default::default() };
         let handle = tokio::spawn(run(deps, Engine::new(HashMap::new()), rx, timing));
 
         tokio::time::sleep(Duration::from_millis(200)).await;
@@ -302,7 +335,7 @@ mod tests {
             sink: rec.clone(),
         };
         let (_tx, rx) = mpsc::unbounded_channel();
-        let timing = Timing { poll: Duration::from_millis(20), tick: Duration::from_millis(5) };
+        let timing = Timing { poll: Duration::from_millis(20), tick: Duration::from_millis(5), ..Default::default() };
         let handle = tokio::spawn(run(deps, Engine::new(HashMap::new()), rx, timing));
 
         // Espera a letra carregar: nesse ponto a tradução já foi disparada (e capturou o
@@ -326,6 +359,40 @@ mod tests {
             "tradução presa no idioma antigo não deveria ter sido aplicada"
         );
 
+        handle.abort();
+    }
+
+    #[tokio::test]
+    async fn lyrics_network_error_is_retried() {
+        let np = NowPlaying {
+            title: "Canção Teste".into(),
+            artist: "Banda Fictícia".into(),
+            album: "Álbum Inventado".into(),
+            duration_ms: 180_000,
+            position_ms: 6000,
+            is_playing: true,
+        };
+        let rec = Arc::new(Recorder::default());
+        let deps = Deps {
+            player: Arc::new(FakePlayer(Mutex::new(Some(np)))),
+            lyrics: Arc::new(FlakyLyrics(Mutex::new(2))),
+            translator: Arc::new(FakeTranslator),
+            sink: rec.clone(),
+        };
+        let (_tx, rx) = mpsc::unbounded_channel();
+        let timing = Timing {
+            poll: Duration::from_millis(20),
+            tick: Duration::from_millis(5),
+            lyrics_retry: vec![Duration::from_millis(10); 3],
+        };
+        let handle = tokio::spawn(run(deps, Engine::new(HashMap::new()), rx, timing));
+
+        tokio::time::sleep(Duration::from_millis(200)).await;
+        {
+            let ev = rec.events.lock().unwrap();
+            assert!(ev.contains(&OverlayEvent::LyricsLoaded(vec!["um".into(), "dois".into()])));
+            assert!(ev.contains(&OverlayEvent::Show));
+        }
         handle.abort();
     }
 }
