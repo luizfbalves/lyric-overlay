@@ -80,14 +80,18 @@ impl TranslationService {
 
     pub async fn translate_track(&self, key: &TrackKey, lines: &[String]) -> Option<Vec<String>> {
         let s = self.settings();
-        if s.mode == Mode::Original || self.status() != DeepLStatus::Ok {
+        if s.mode == Mode::Original {
             return None;
         }
-        let api_key = s.key?;
         let target = s.target.code();
         if let Some(hit) = self.cache.get(key, target) {
             return hit.lines;
         }
+        // O gate de status só protege a chamada de rede: um hit de cache não depende da chave.
+        if self.status() != DeepLStatus::Ok {
+            return None;
+        }
+        let api_key = s.key?;
         match self.client(api_key).translate(lines, target).await {
             Ok(t) => {
                 let entry = CachedTranslation {
@@ -125,9 +129,36 @@ mod tests {
     use super::*;
     use crate::config::{Mode, TargetLang};
     use serde_json::{json, Value};
+    use std::sync::atomic::{AtomicUsize, Ordering};
     use std::sync::{Arc, Mutex};
     use wiremock::matchers::path;
     use wiremock::{Mock, MockServer, Request, Respond, ResponseTemplate};
+
+    /// 1ª chamada responde OK (como `Echo`), as seguintes respondem 403 — simula a chave
+    /// virando inválida depois de uma tradução bem-sucedida anterior.
+    struct FirstOkThen403 {
+        calls: AtomicUsize,
+    }
+    impl FirstOkThen403 {
+        fn new() -> Self {
+            Self { calls: AtomicUsize::new(0) }
+        }
+    }
+    impl Respond for FirstOkThen403 {
+        fn respond(&self, req: &Request) -> ResponseTemplate {
+            if self.calls.fetch_add(1, Ordering::SeqCst) > 0 {
+                return ResponseTemplate::new(403);
+            }
+            let v: Value = serde_json::from_slice(&req.body).unwrap();
+            let items: Vec<Value> = v["text"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|t| json!({"detected_source_language": "JA", "text": format!("tr:{}", t.as_str().unwrap())}))
+                .collect();
+            ResponseTemplate::new(200).set_body_json(json!({ "translations": items }))
+        }
+    }
 
     struct Echo(&'static str);
     impl Respond for Echo {
@@ -229,6 +260,25 @@ mod tests {
         assert_eq!(f.svc.translate_track(&key(), &lines()).await, None);
         assert_eq!(f.svc.translate_track(&key(), &lines()).await, None);
         assert_eq!(f.svc.status(), DeepLStatus::Ok);
+    }
+
+    #[tokio::test]
+    async fn cached_translation_survives_invalid_key_status() {
+        let s = MockServer::start().await;
+        Mock::given(path("/v2/translate")).respond_with(FirstOkThen403::new()).expect(2).mount(&s).await;
+        let f = fixture(&s, Mode::Both, Some("k"));
+        let want = Some(vec!["tr:um".to_string(), "".to_string(), "tr:dois".to_string()]);
+
+        // 1ª requisição: popula o cache da faixa A com sucesso.
+        assert_eq!(f.svc.translate_track(&key(), &lines()).await, want);
+
+        // 2ª requisição: faixa B (fora do cache) recebe 403 e deixa o status InvalidKey.
+        let other = TrackKey { artist: "Outra Banda".into(), title: "Outra Canção".into(), duration_s: 200 };
+        assert_eq!(f.svc.translate_track(&other, &lines()).await, None);
+        assert_eq!(f.svc.status(), DeepLStatus::InvalidKey);
+
+        // faixa A já está em cache: deve devolver o hit sem nova requisição, mesmo com a chave inválida.
+        assert_eq!(f.svc.translate_track(&key(), &lines()).await, want);
     }
 
     #[test]
